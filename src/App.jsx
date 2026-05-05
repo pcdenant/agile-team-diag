@@ -230,6 +230,120 @@ const ACTION_PLANS = {
       },
     },
   },
+  c_oversize: {
+    cost: "[items non terminés par sprint] × [jours de travail déjà consommés] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter les items présents dans le sprint depuis plus de deux cycles consécutifs. Chaque item en carryover a déjà consommé une partie de la capacité du sprint précédent sans retour.",
+    experiments: [
+      {
+        label: "Étape 1 — Fixer une règle de taille",
+        timing: "cette semaine",
+        description: "En rétro, l'équipe pose un seuil : tout item qui dépasse [X] jours ou [Y] points doit être découpé avant d'entrer en sprint. PO et développeurs ensemble. La règle s'applique dès le prochain sprint planning, pas dans deux semaines.",
+        criterion: "Au moins un item découpé selon la règle avant la fin du sprint en cours.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Intégrer le check taille dans la DoR",
+        timing: "sprint suivant",
+        description: "Ajouter un critère d'entrée au sprint : \"taille validée par l'équipe en refinement\". Aucun item ne rentre en sprint sans que le PO et l'équipe aient confirmé qu'il est faisable dans le cycle.",
+        criterion: "Zéro item en carryover pour raison de taille sur 2 sprints consécutifs.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items en carryover en fin de sprint", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Items validés en taille avant d'entrer en sprint", target: "100%", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 5 min en Sprint Review, comparaison sprint sur sprint.",
+    businessPitch: {
+      leadershipQuestion: "\"Si on livrait en deux fois au lieu d'une, est-ce que le client obtient de la valeur plus tôt — et est-ce que ça compte pour lui ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Des items trop gros débordent sur le sprint suivant. La vélocité baisse sans que l'équipe soit moins productive — elle travaille sur des sujets qui ne terminent pas.",
+          expectedResult: "Découper avant le sprint libère une capacité qui travaillait déjà mais ne livrait jamais. Le sprint se ferme avec ce qu'il a commencé.",
+        },
+        time_to_market: {
+          statusQuoCost: "Un item qui s'étale sur plusieurs sprints n'apporte rien pendant tout ce temps. Chaque sprint supplémentaire est un délai de livraison.",
+          expectedResult: "Découper permet de livrer une première partie dès le sprint suivant, et de réduire le délai entre le démarrage et la première valeur reçue par le client.",
+        },
+      },
+    },
+  },
+  c_scope_creep: {
+    cost: "[ajouts de scope par sprint] × [jours de travail non planifiés absorbés] × [coût journalier équipe]",
+    costHint: "Si les données manquent : en fin de sprint, comparer la description initiale de chaque item livré avec ce qui a été fait. Les items dont le contenu a changé pendant l'exécution sont le signal.",
+    experiments: [
+      {
+        label: "Étape 1 — Photographier le scope au démarrage",
+        timing: "ce sprint",
+        description: "Quand un développeur prend un item : deux lignes dans le ticket, ce qui est inclus, ce qui est exclu. Le PO valide si la description ne lui correspond pas. Pas de formalisme, un commentaire suffit.",
+        criterion: "Au moins un item du sprint a une description de scope figée au démarrage.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Tout ajout devient un ticket",
+        timing: "sprint suivant",
+        description: "Tout ajout de scope pendant le sprint : nouveau ticket, ajouté au backlog, discuté au prochain planning. Pas d'ajout silencieux. Le SM facilite le refus quand le PO est sous pression. Les ajouts ne disparaissent pas. Ils attendent.",
+        criterion: "Zéro ajout de scope non tracé sur 2 sprints consécutifs.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items dont le scope a changé pendant le sprint", target: "≤ 1", frequency: "Chaque sprint" },
+      { metric: "Tickets créés pour scope non planifié", target: "Tendance baissière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "PO + SM — 10 min en rétro, revue des items livrés vs description initiale.",
+    businessPitch: {
+      leadershipQuestion: "\"Est-ce que les [X] jours perdus par sprint sur des ajouts non planifiés valent plus que les [Y] items qu'on n'a pas pu livrer à cause d'eux ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque ajout de scope pendant le sprint mange de la capacité sans avoir été planifié. Le sprint devient imprévisible sans que l'équipe soit désorganisée — la définition du travail change en cours d'exécution.",
+          expectedResult: "Figer le scope au démarrage rend la vélocité lisible et le sprint engageable.",
+        },
+        time_to_market: {
+          statusQuoCost: "Un item qui grandit pendant l'exécution prend plus de temps à chaque cycle. Le cycle time s'allonge par accumulation d'ajouts invisibles.",
+          expectedResult: "Tracer et bloquer les ajouts réduit le temps moyen entre démarrage et livraison effective.",
+        },
+      },
+    },
+  },
+  c_wip: {
+    cost: "[personnes en multitâche] × [perte estimée par changement de contexte] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter les items en statut \"in progress\" sur le board à n'importe quel moment de la journée. Si ce nombre dépasse le nombre de personnes dans l'équipe, du multitâche est en cours.",
+    experiments: [
+      {
+        label: "Étape 1 — Poser une limite WIP visible",
+        timing: "cette semaine",
+        description: "En rétro ou en daily : une personne, un item actif à la fois. Si le travail se fait en binôme, deux personnes pour un item actif. Écrire la règle sur le board. L'équipe l'a posée elle-même, elle la tient elle-même.",
+        criterion: "Le nombre d'items \"in progress\" ne dépasse pas [X] à aucun moment du sprint suivant.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Finir avant de commencer",
+        timing: "sprint suivant",
+        description: "Quand la limite WIP est atteinte et qu'une main se libère : avant de prendre un nouveau sujet, elle aide à débloquer ce qui est déjà en cours. Le SM facilite le swarming. On ne commence pas, on finit.",
+        criterion: "Le throughput — items terminés par sprint — est en hausse sur 2 sprints consécutifs.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "WIP moyen (items actifs simultanément)", target: "≤ [limite fixée]", frequency: "Chaque sprint" },
+      { metric: "Throughput (items terminés par sprint)", target: "Tendance hausse", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 5 min au Daily, revue du board en temps réel.",
+    businessPitch: {
+      leadershipQuestion: "\"Si l'équipe terminait [X] items par sprint au lieu de [Y], est-ce que ça change notre capacité à tenir nos engagements envers le business ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Quand tout le monde travaille sur plusieurs sujets en même temps, peu d'items sortent à temps. Le sprint se ferme avec beaucoup de travail commencé et peu de travail livré.",
+          expectedResult: "Poser une limite WIP augmente le nombre d'items terminés par sprint, sans personne supplémentaire.",
+        },
+        time_to_market: {
+          statusQuoCost: "Le cycle time s'allonge quand chaque item attend pendant qu'on travaille sur un autre. Le délai entre démarrage et livraison s'accumule item par item.",
+          expectedResult: "Réduire le WIP réduit directement le délai entre démarrage et livraison, item par item.",
+        },
+      },
+    },
+  },
 };
 
 // --- DATA: SYMPTOMS (4) ---------------------------------------------------
@@ -701,7 +815,7 @@ function Header() {
     <div style={{ marginBottom: 28, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
       <div style={{ fontSize: 12, color: C.muted, letterSpacing: 1, textTransform: "uppercase" }}>Collaboration Solved · V2.5 · rev. 8</div>
       <div style={{ fontSize: 22, fontWeight: 600, marginTop: 4, color: C.ink }}>Team Dysfunction Diagnostic</div>
-      <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Flow & Livraison — Plans d'action : 2/21 implémentés</div>
+      <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Flow & Livraison — Plans d'action : 5/21 implémentés</div>
     </div>
   );
 }
