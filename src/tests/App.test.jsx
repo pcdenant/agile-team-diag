@@ -252,6 +252,167 @@ describe("Navigation depuis PlanScreen", () => {
   });
 });
 
+// --- ResultScreen + PlanScreen — c2, c2q, c_cap (Predictability) -----------
+//
+// Chemin c2:
+//   s1 → p_observe(planifié n'a pas avancé) → p_blocked_nature(Extérieur) →
+//   p_could_start(Non, démarrage bloqué) → p_know_capacity(Oui, identifiée) →
+//   p_anticipable(Non, imprévisible) → p_quantify_dep(Non, pas chiffré) → c2
+//
+// Chemin c2q:
+//   …même chemin jusqu'à p_quantify_dep → (Oui, chiffré) →
+//   p_decision_owner_start(L'équipe peut agir) → c2q
+//
+// Chemin c_cap:
+//   s1 → p_observe(autre travail s'est invité) → p_other_type(NEW work) →
+//   p_new_urgent(Non, pris sans arbitrage) → p_capacity_split(Non, volume dépasse) → c_cap
+
+async function navigateTo_p_quantify_dep(user) {
+  await user.click(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ }));
+  await user.click(screen.getByRole("button", { name: /Le travail planifié n'a pas avancé/ }));
+  await user.click(screen.getByRole("button", { name: /Extérieur — autre équipe ou dépendance externe/ }));
+  await user.click(screen.getByRole("button", { name: /Non — le démarrage lui-même est bloqué/ }));
+  await user.click(screen.getByRole("button", { name: /Oui, la source est identifiée et tracée/ }));
+  await user.click(screen.getByRole("button", { name: /Non — découverte en cours, imprévisible/ }));
+}
+
+async function navigateTo_c_cap(user) {
+  await user.click(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ }));
+  await user.click(screen.getByRole("button", { name: /D'autre travail s'est invité/ }));
+  await user.click(screen.getByRole("button", { name: /Du NEW work qui s'est invité/ }));
+  await user.click(screen.getByRole("button", { name: /Non, pris sans vrai arbitrage/ }));
+  await user.click(screen.getByRole("button", { name: /Non — concentration bonne par item/ }));
+}
+
+describe("ResultScreen — c2 (Predictability)", () => {
+  it("affiche la cause c2 avec le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_quantify_dep(user);
+    await user.click(screen.getByRole("button", { name: /Non, l'impact n'est pas encore chiffré/ }));
+
+    expect(screen.getByText(/Dépendance externe au démarrage — identifiée mais non quantifiée/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+});
+
+describe("ResultScreen — c2q (Predictability)", () => {
+  it("affiche la cause c2q avec le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_quantify_dep(user);
+    await user.click(screen.getByRole("button", { name: /Oui, l'impact est chiffré/ }));
+    await user.click(screen.getByRole("button", { name: /L'équipe ou moi peut agir/ }));
+
+    expect(screen.getByText(/Dépendance externe au démarrage — quantifiée, décision dans le périmètre/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+});
+
+describe("ResultScreen — c_cap (Predictability)", () => {
+  it("affiche la cause c_cap avec le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_c_cap(user);
+
+    expect(screen.getByText(/Capacité réelle insuffisante/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c2 (sans focusVariant)", () => {
+  async function goToPlanScreen_c2(user) {
+    await navigateTo_p_quantify_dep(user);
+    await user.click(screen.getByRole("button", { name: /Non, l'impact n'est pas encore chiffré/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les 4 zones du plan", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c2(user);
+
+    expect(screen.getByText("Impact · Objectif")).toBeInTheDocument();
+    expect(screen.getByText("Inspecter · Mesurer")).toBeInTheDocument();
+    expect(screen.getByText("Adapter · Expérimenter")).toBeInTheDocument();
+    expect(screen.getByText("Parler business")).toBeInTheDocument();
+  });
+
+  it("affiche la formule coût c2", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c2(user);
+
+    expect(screen.getByText(/items bloqués au démarrage/)).toBeInTheDocument();
+  });
+
+  it("affiche les 2 étapes avec le gate", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c2(user);
+
+    expect(screen.getByText(/Étape 1 — Tracer les dépendances/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Chiffrer l'impact/)).toBeInTheDocument();
+    expect(screen.getByText(/Lancer l'étape suivante uniquement/)).toBeInTheDocument();
+  });
+
+  it("affiche la leadershipQuestion et pas de section Statu quo", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c2(user);
+
+    expect(screen.getByText(/jours de capacité bloqués à chaque sprint/)).toBeInTheDocument();
+    expect(screen.queryByText(/Statu quo/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Résultat attendu/)).not.toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c2q (sans focusVariant)", () => {
+  async function goToPlanScreen_c2q(user) {
+    await navigateTo_p_quantify_dep(user);
+    await user.click(screen.getByRole("button", { name: /Oui, l'impact est chiffré/ }));
+    await user.click(screen.getByRole("button", { name: /L'équipe ou moi peut agir/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les étapes c2q et la leadershipQuestion sans focusVariant", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c2q(user);
+
+    expect(screen.getByText(/Étape 1 — Utiliser les données en planification/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Poser un accord de service minimal/)).toBeInTheDocument();
+    expect(screen.getByText(/accord entre les deux équipes/)).toBeInTheDocument();
+    expect(screen.queryByText(/Statu quo/)).not.toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c_cap (sans focusVariant)", () => {
+  async function goToPlanScreen_c_cap(user) {
+    await navigateTo_c_cap(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les étapes c_cap et la leadershipQuestion sans focusVariant", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_cap(user);
+
+    expect(screen.getByText(/Étape 1 — Établir la capacité réelle/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Présenter le cas au management/)).toBeInTheDocument();
+    expect(screen.getByText(/on en récupère \[Y\]/)).toBeInTheDocument();
+    expect(screen.queryByText(/Statu quo/)).not.toBeInTheDocument();
+  });
+
+  it("affiche le badge palier 1 pour c_cap", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_c_cap(user);
+
+    expect(screen.getByText(/Palier 1/)).toBeInTheDocument();
+  });
+});
+
 // --- teamName ----------------------------------------------------------------
 
 describe("teamName", () => {

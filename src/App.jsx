@@ -458,6 +458,90 @@ const ACTION_PLANS = {
       },
     },
   },
+  c2: {
+    cost: "[items bloqués au démarrage] × [jours d'attente avant résolution] × [coût journalier de l'équipe]",
+    costHint: "Si les données manquent : compter combien d'items du sprint en cours n'ont pas pu démarrer dans les 2 premiers jours après le lancement du sprint.",
+    experiments: [
+      {
+        label: "Étape 1 — Tracer les dépendances",
+        timing: "cette semaine",
+        description: "Au prochain standup, poser une seule question : \"Qu'est-ce qu'on attend exactement, et de qui ?\" Créer un tableau simple : item bloqué, source externe, date de début du blocage. Cinq minutes, une ligne par dépendance active.",
+        criterion: "Au moins deux dépendances sont tracées avec une source et une durée de blocage lisibles.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Chiffrer l'impact",
+        timing: "ce sprint",
+        description: "Pour chaque dépendance tracée : multiplier les jours bloqués par le coût journalier de l'équipe. Une estimation suffit. L'objectif est d'avoir un chiffre à montrer, pas une comptabilité parfaite.",
+        criterion: "Chaque dépendance active a un impact estimé en jours ou en $, prêt à présenter en réunion.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Dépendances au démarrage tracées", target: "100% des items bloqués", frequency: "Chaque sprint" },
+      { metric: "Impact estimé disponible", target: "Avant la fin du sprint", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 10 min en fin de sprint, intégré au bilan ou à la rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"On a [X] jours de capacité bloqués à chaque sprint à cause de cette dépendance. On peut en parler dans le prochain comité ?\"",
+    },
+  },
+  c2q: {
+    cost: "[items bloqués au démarrage] × [jours d'attente] × [coût journalier de l'équipe]",
+    costHint: "Les données sont déjà disponibles. Utiliser les chiffres collectés au palier précédent (c2).",
+    experiments: [
+      {
+        label: "Étape 1 — Utiliser les données en planification",
+        timing: "ce sprint",
+        description: "Apporter les chiffres au prochain Sprint Planning. Identifier les items à risque de dépendance externe avant qu'ils entrent dans le sprint. Définir un signal de déclenchement explicite pour chaque item dépendant : ce qui doit être vrai pour que l'item démarre. Pas de démarrage sans signal.",
+        criterion: "Au moins un item à dépendance connue a un signal de déclenchement défini. L'équipe ne démarre pas cet item par défaut.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Poser un accord de service minimal",
+        timing: "sprint suivant",
+        description: "Contacter l'équipe ou la personne source. Proposer trois choses : un délai de réponse maximum, un canal de contact unique, une fréquence de synchronisation. Pas un contrat formel. Juste une entente claire sur ce qu'on peut attendre et quand.",
+        criterion: "L'accord existe. Le délai moyen sur les dépendances concernées baisse sur les deux sprints suivants.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Délai moyen de résolution des dépendances au démarrage", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Items démarrés sans attente non planifiée", target: "Tendance hausse", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 10 min en Sprint Planning + suivi en rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Cette dépendance coûte [X jours] par sprint depuis [N sprints]. On peut régler ça avec un accord entre les deux équipes. Est-ce qu'on se donne deux semaines pour tester ?\"",
+    },
+  },
+  c_cap: {
+    cost: "([travail planifié] − [travail livré]) × [coût journalier de l'équipe] × [nombre de sprints]",
+    costHint: "Calculer le ratio livré/planifié sur les 5 derniers sprints. Sous 80%, sans dépendance externe ni urgence identifiée comme cause, c'est un signal de capacité insuffisante.",
+    experiments: [
+      {
+        label: "Étape 1 — Établir la capacité réelle",
+        timing: "cette semaine",
+        description: "Calculer la capacité réelle de l'équipe pour le dernier sprint : jours disponibles moins congés, réunions fixes, et temps de support récurrent. Comparer au volume planifié. Si l'écart dépasse 20%, le problème n'est pas l'exécution.",
+        criterion: "Un ratio capacité réelle / volume planifié existe, lisible par quelqu'un qui ne connaît pas le contexte technique.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Présenter le cas au management",
+        timing: "sprint suivant",
+        description: "Apporter le ratio et le coût estimé de l'écart en réunion de planification ou en one-on-one avec le manager. Proposer deux options concrètes : réduire le volume entrant de [X%], ou définir quels sujets l'équipe arrête de traiter pour libérer de la capacité. Chiffres en main, pas une demande floue.",
+        criterion: "La conversation a eu lieu. Une décision, même provisoire, est documentée.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Ratio livré/planifié", target: "≥ 80% sur 3 sprints consécutifs", frequency: "Chaque sprint" },
+      { metric: "Nombre de sujets actifs simultanés par personne", target: "≤ [seuil défini avec l'équipe]", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM (collecte) + Manager direct (décision) — 15 min en revue de sprint ou one-on-one mensuel.",
+    businessPitch: {
+      leadershipQuestion: "\"On paie pour [X] jours de capacité par sprint et on en récupère [Y]. Est-ce qu'on ajuste ce qu'on leur donne, ou est-ce qu'on accepte que le reste ne soit pas livré ?\"",
+    },
+  },
 };
 
 // --- DATA: SYMPTOMS (4) ---------------------------------------------------
