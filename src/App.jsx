@@ -151,6 +151,87 @@ const CAUSES = {
   },
 };
 
+// --- DATA: ACTION_PLANS (plans d'action par cause) ------------------------
+
+const ACTION_PLANS = {
+  c_tech: {
+    cost: "[items bloqués pour raison technique] × [jours d'attente moyens] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter les items tagués \"bloqué\" à la fin des 3 derniers sprints et demander, pour chacun, si la raison était technique.",
+    experiments: [
+      {
+        label: "Étape 1 — Rendre le blocage traçable",
+        timing: "cette semaine",
+        description: "Ajouter un tag \"bloqué — tech\" sur le board. Dès qu'un item entre en attente pour cause technique, noter : ce qui est bloqué, depuis quand, qui résout côté Ops ou Infra. Pas de reconstitution après coup.",
+        criterion: "À la fin du sprint en cours, au moins un blocage tech est tracé avec les trois champs remplis.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Slot de résolution fixe",
+        timing: "sprint suivant",
+        description: "15 minutes par semaine, heure fixe, avec le responsable Ops ou Infra. Tous les items tagués \"tech\" passent dans ce slot. L'item attend le slot suivant, pas la prochaine fois que quelqu'un est disponible.",
+        criterion: "La durée moyenne d'un blocage technique baisse sur 2 sprints consécutifs.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items bloqués pour raison technique en fin de sprint", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Durée moyenne d'un blocage technique", target: "Tendance baissière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM + responsable Ops/Infra — 10 min en rétro, intégré à la revue de sprint.",
+    businessPitch: {
+      leadershipQuestion: "\"Combien de jours-équipe perdons-nous par sprint sur des blocages techniques — et qui est officiellement responsable de les résoudre ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque blocage technique non adressé consomme [X] jours de capacité planifiée par sprint. Le sprint ne rattrape pas ces jours une fois perdus.",
+          expectedResult: "Tracer et adresser ces blocages dès qu'ils arrivent réduit le nombre de sprints non tenus, sans changer ce que l'équipe peut livrer en conditions normales.",
+        },
+        time_to_market: {
+          statusQuoCost: "Un item bloqué par un problème technique attend en moyenne [X] jours avant que quelqu'un prenne la main. Ce délai s'accumule sur chaque livraison.",
+          expectedResult: "Un slot de résolution fixe avec Ops/Infra réduit ce délai directement sur le cycle time des items concernés.",
+        },
+      },
+    },
+  },
+  c_gate: {
+    cost: "[items en attente au gate] × [jours d'attente moyens] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter combien d'items terminés attendaient encore une validation à la fin des 3 derniers sprints.",
+    experiments: [
+      {
+        label: "Étape 1 — Nommer le gate",
+        timing: "cette semaine",
+        description: "20 minutes en rétro. Une question : \"À quelle étape est-ce qu'on attend quelqu'un d'autre ?\" Un post-it par gate identifié. Pour chaque gate : qui intervient, combien d'items passent, temps d'attente moyen.",
+        criterion: "Au moins un gate avec un temps d'attente moyen supérieur à un jour est identifié et nommé.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Slot fixe sur le gate principal",
+        timing: "sprint suivant",
+        description: "15 minutes par jour, heure fixe, avec le responsable du gate. Tous les items en attente passent à ce moment. L'attente ad hoc disparaît.",
+        criterion: "Temps d'attente moyen sous 1 jour sur 2 sprints consécutifs.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items en attente au gate en fin de sprint", target: "≤ 2", frequency: "Chaque sprint" },
+      { metric: "Temps d'attente moyen au gate", target: "Tendance baissière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 10 min en fin de sprint, intégré à la rétro ou la Sprint Review.",
+    businessPitch: {
+      leadershipQuestion: "\"Est-ce que ce niveau de contrôle vaut ce qu'il coûte — [coût estimé] par sprint ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Notre gate de [nom du gate] immobilise en moyenne [X] jours de capacité par sprint. Du travail terminé qui attend. Régler ce gate libère cette capacité sans budget supplémentaire.",
+          expectedResult: "Réduire l'attente au gate libère de la capacité planifiée sans budget supplémentaire.",
+        },
+        time_to_market: {
+          statusQuoCost: "Chaque validation interne qui traîne allonge le cycle time sans rien ajouter.",
+          expectedResult: "Réduire l'attente au gate réduit le délai moyen de livraison sur les items concernés.",
+        },
+      },
+    },
+  },
+};
+
 // --- DATA: SYMPTOMS (4) ---------------------------------------------------
 
 const SYMPTOMS = [
@@ -556,6 +637,7 @@ function palierMeta(p) {
 
 export default function App() {
   const [step, setStep] = useState("symptom");
+  const [teamName, setTeamName] = useState(null);
   const [symptom, setSymptom] = useState(null);
   const [path, setPath] = useState([]);
   const [terminalId, setTerminalId] = useState(null);
@@ -566,9 +648,10 @@ export default function App() {
     ? lookupNode(symptom.tree, currentNodeId)
     : null;
 
-  function pickSymptom(s) {
+  function pickSymptom(s, name) {
     setSymptom(s);
     setTreeFocus(s.tree);
+    setTeamName(name || null);
     setPath([]);
     setTerminalId(null);
     setStep("diagnosis");
@@ -581,26 +664,32 @@ export default function App() {
   }
 
   function backOne() {
+    if (step === "plan") { setStep("result"); return; }
     if (path.length === 0) { setStep("symptom"); setSymptom(null); setTreeFocus(null); return; }
     setPath(path.slice(0, -1));
     setTerminalId(null);
     if (step === "result") setStep("diagnosis");
   }
 
-  function restart() { setStep("symptom"); setSymptom(null); setPath([]); setTerminalId(null); setTreeFocus(null); }
+  function showPlan() { setStep("plan"); }
+
+  function restart() { setStep("symptom"); setTeamName(null); setSymptom(null); setPath([]); setTerminalId(null); setTreeFocus(null); }
 
   const tree = symptom ? TREES[symptom.tree] : null;
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: FONT, fontSize: 15, lineHeight: 1.5, padding: "32px 16px 64px" }}>
-      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <Header />
         {step === "symptom" && <SymptomScreen onPick={pickSymptom} />}
         {step === "diagnosis" && symptom && currentNode && (
           <DiagnosisScreen symptom={symptom} tree={tree} currentNodeId={currentNodeId} currentNode={currentNode} path={path} onAnswer={answer} onBack={backOne} onRestart={restart} />
         )}
         {step === "result" && terminalId && (
-          <ResultScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} path={path} onBack={backOne} onRestart={restart} />
+          <ResultScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} path={path} onBack={backOne} onRestart={restart} onPlan={showPlan} />
+        )}
+        {step === "plan" && terminalId && ACTION_PLANS[terminalId] && (
+          <PlanScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} teamName={teamName} path={path} onBack={backOne} onRestart={restart} />
         )}
       </div>
     </div>
@@ -610,20 +699,33 @@ export default function App() {
 function Header() {
   return (
     <div style={{ marginBottom: 28, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ fontSize: 12, color: C.muted, letterSpacing: 1, textTransform: "uppercase" }}>Collaboration Solved · V2.5 · rev. 7</div>
+      <div style={{ fontSize: 12, color: C.muted, letterSpacing: 1, textTransform: "uppercase" }}>Collaboration Solved · V2.5 · rev. 8</div>
       <div style={{ fontSize: 22, fontWeight: 600, marginTop: 4, color: C.ink }}>Team Dysfunction Diagnostic</div>
-      <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Flow & Livraison — Plan d'action à venir.</div>
+      <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Flow & Livraison — Plans d'action : 2/21 implémentés</div>
     </div>
   );
 }
 
 function SymptomScreen({ onPick }) {
+  const [name, setName] = useState("");
   return (
     <div>
+      <div style={{ marginBottom: 24 }}>
+        <label style={{ display: "block", fontSize: 12, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+          Nom de l'équipe <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optionnel)</span>
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="ex. Team Phoenix"
+          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: FONT, fontSize: 14, color: C.ink, background: C.surface, outline: "none" }}
+        />
+      </div>
       <SectionTitle n="01" label="Symptôme observé" />
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {SYMPTOMS.map((s) => (
-          <button key={s.id} onClick={() => onPick(s)}
+          <button key={s.id} onClick={() => onPick(s, name.trim())}
             style={{ ...btnReset, textAlign: "left", padding: "14px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.borderStrong)}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}>
@@ -664,11 +766,12 @@ function DiagnosisScreen({ symptom, tree, currentNodeId, currentNode, path, onAn
   );
 }
 
-function ResultScreen({ symptom, tree, treeFocus, terminalId, path, onBack, onRestart }) {
+function ResultScreen({ symptom, tree, treeFocus, terminalId, path, onBack, onRestart, onPlan }) {
   const cause = CAUSES[terminalId];
   const sev = severityColor(cause.severity);
   const palier = palierMeta(cause.palier);
   const focusLabel = treeFocus ? TREES[treeFocus].label : tree.label;
+  const hasPlan = Boolean(ACTION_PLANS[terminalId]);
   return (
     <div>
       <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Modifier dernière réponse" />
@@ -684,7 +787,146 @@ function ResultScreen({ symptom, tree, treeFocus, terminalId, path, onBack, onRe
         </div>
       </div>
       <PathTrail path={path} />
-      <div style={{ marginTop: 24, fontSize: 12, color: C.muted, fontStyle: "italic" }}>Plan d'action — à implémenter.</div>
+      <div style={{ marginTop: 24 }}>
+        {hasPlan ? (
+          <button onClick={onPlan} style={primaryBtn}>Voir le plan d'action →</button>
+        ) : (
+          <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>Plan d'action — à implémenter.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBack, onRestart }) {
+  const cause = CAUSES[terminalId];
+  const plan = ACTION_PLANS[terminalId];
+  const sev = severityColor(cause.severity);
+  const pitch = plan.businessPitch;
+  const variant = treeFocus && pitch.focusVariant ? pitch.focusVariant[treeFocus] : null;
+
+  return (
+    <div>
+      <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Retour au résultat" />
+
+      {/* En-tête plan */}
+      <div style={{ marginBottom: 24 }}>
+        <SectionTitle n={String(path.length + 3).padStart(2, "0")} label="Plan d'action" nodeId={terminalId} />
+        <div style={{ fontSize: 16, fontWeight: 600, color: C.ink, marginBottom: 6 }}>{cause.label}</div>
+        {teamName && <div style={{ fontSize: 13, color: C.muted }}>Équipe : {teamName}</div>}
+      </div>
+
+      {/* Zone 1 — 2 colonnes */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20, alignItems: "start" }}>
+        {/* Col gauche — Impact · Objectif */}
+        <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Impact · Objectif</div>
+
+          {/* Formule coût */}
+          <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, borderRadius: 4, padding: "10px 12px", marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.hintText, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Ce que ça coûte</div>
+            <div style={{ fontFamily: MONO, fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{plan.cost}</div>
+          </div>
+          {plan.costHint && (
+            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5, marginBottom: 14 }}>{plan.costHint}</div>
+          )}
+
+          {/* Indicateurs */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Mesures de succès</div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left", color: C.muted, fontWeight: 600, paddingBottom: 4, borderBottom: `1px solid ${C.border}`, paddingRight: 8 }}>Métrique</th>
+                <th style={{ textAlign: "right", color: C.muted, fontWeight: 600, paddingBottom: 4, borderBottom: `1px solid ${C.border}`, paddingRight: 8 }}>Cible</th>
+                <th style={{ textAlign: "right", color: C.muted, fontWeight: 600, paddingBottom: 4, borderBottom: `1px solid ${C.border}` }}>Fréquence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plan.indicators.map((ind, i) => (
+                <tr key={i}>
+                  <td style={{ padding: "6px 8px 6px 0", color: C.text, lineHeight: 1.4, borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none" }}>{ind.metric}</td>
+                  <td style={{ padding: "6px 8px", color: C.ink, fontWeight: 500, textAlign: "right", borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none", whiteSpace: "nowrap" }}>{ind.target}</td>
+                  <td style={{ padding: "6px 0 6px 8px", color: C.muted, textAlign: "right", borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none", whiteSpace: "nowrap" }}>{ind.frequency}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: 12, fontSize: 11, color: C.muted, fontStyle: "italic" }}>{plan.ownerNote}</div>
+        </div>
+
+        {/* Col droite — Inspecter · Mesurer */}
+        <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Inspecter · Mesurer</div>
+          <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>
+            Collecter les données dès maintenant — sans reconstituer après coup.
+          </div>
+          <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, marginBottom: 10 }}>
+            <strong style={{ color: C.ink }}>Quoi :</strong> Pour chaque item bloqué, noter la cause, la date de début, et le responsable de résolution.
+          </div>
+          <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.55 }}>
+            <strong style={{ color: C.ink }}>Comment :</strong> Voir Étape 1 ci-dessous — le tag sur le board est la seule action requise cette semaine.
+          </div>
+          <div style={{ marginTop: 14, borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
+            <Badge color={sev}>Sévérité : {severityLabel(cause.severity)}</Badge>
+            {" "}
+            <Badge color={C.borderStrong}>Propriétaire : {cause.owner}</Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Zone 2 — Parler business (pleine largeur) */}
+      {(variant || pitch.leadershipQuestion) && (
+        <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface, marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Parler business</div>
+          {variant && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Statu quo</div>
+                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55 }}>{variant.statusQuoCost}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Résultat attendu</div>
+                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55 }}>{variant.expectedResult}</div>
+              </div>
+            </div>
+          )}
+          {pitch.leadershipQuestion && (
+            <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 4, padding: "10px 14px" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#0369a1", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Question à poser au management</div>
+              <div style={{ fontSize: 13, color: "#0c4a6e", lineHeight: 1.5, fontStyle: "italic" }}>{pitch.leadershipQuestion}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Zone 3 — Adapter · Expérimenter (pleine largeur) */}
+      <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface, marginBottom: 24 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 16 }}>Adapter · Expérimenter</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {plan.experiments.map((exp, i) => (
+            <div key={i}>
+              <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "14px 16px", background: "#fafafa" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{exp.label}</span>
+                  <Badge color={C.muted}>{exp.timing}</Badge>
+                </div>
+                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>{exp.description}</div>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, color: "#166534", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 4, padding: "8px 10px" }}>
+                  <span style={{ fontWeight: 700, flexShrink: 0 }}>✓</span>
+                  <span>{exp.criterion}</span>
+                </div>
+              </div>
+              {exp.gate && i < plan.experiments.length - 1 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", fontSize: 11, color: C.muted }}>
+                  <div style={{ flex: 1, height: 1, background: C.border }} />
+                  <span style={{ whiteSpace: "nowrap" }}>Lancer l'étape suivante uniquement quand celle-ci est conclue</span>
+                  <div style={{ flex: 1, height: 1, background: C.border }} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -741,3 +983,4 @@ function Badge({ color, children }) {
 
 const btnReset = { font: "inherit", color: "inherit", outline: "none" };
 const linkBtn = { ...btnReset, border: "none", background: "transparent", fontSize: 12, color: C.muted, cursor: "pointer", padding: "4px 6px", textDecoration: "underline", textUnderlineOffset: 3 };
+const primaryBtn = { ...btnReset, border: `1px solid ${C.ink}`, background: C.ink, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "10px 20px", borderRadius: 6, letterSpacing: 0.2 };
