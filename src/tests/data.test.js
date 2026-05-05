@@ -51,11 +51,11 @@ describe("CAUSES", () => {
 
 // --- ACTION_PLANS ------------------------------------------------------------
 
-const PLAN_IDS = ["c_tech", "c_gate"];
+const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip"];
 
 describe("ACTION_PLANS", () => {
-  it("exists only for c_tech and c_gate (2 plans)", () => {
-    expect(Object.keys(ACTION_PLANS)).toHaveLength(2);
+  it("contient exactement 5 plans implémentés", () => {
+    expect(Object.keys(ACTION_PLANS)).toHaveLength(5);
     PLAN_IDS.forEach((id) => expect(ACTION_PLANS).toHaveProperty(id));
   });
 
