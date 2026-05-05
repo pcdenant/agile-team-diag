@@ -51,11 +51,13 @@ describe("CAUSES", () => {
 
 // --- ACTION_PLANS ------------------------------------------------------------
 
-const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor"];
+const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c2", "c2q", "c_cap"];
+const PLANS_WITH_VARIANT = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor"];
+const PLANS_WITHOUT_VARIANT = ["c2", "c2q", "c_cap"];
 
 describe("ACTION_PLANS", () => {
-  it("contient exactement 8 plans implémentés", () => {
-    expect(Object.keys(ACTION_PLANS)).toHaveLength(8);
+  it("contient exactement 11 plans implémentés", () => {
+    expect(Object.keys(ACTION_PLANS)).toHaveLength(11);
     PLAN_IDS.forEach((id) => expect(ACTION_PLANS).toHaveProperty(id));
   });
 
@@ -96,7 +98,7 @@ describe("ACTION_PLANS", () => {
     });
   });
 
-  it.each(PLAN_IDS)("plan %s businessPitch a focusVariant pour les 2 arbres", (id) => {
+  it.each(PLANS_WITH_VARIANT)("plan %s businessPitch a focusVariant pour les 2 arbres", (id) => {
     const { focusVariant } = ACTION_PLANS[id].businessPitch;
     expect(focusVariant).toHaveProperty("predictability");
     expect(focusVariant).toHaveProperty("time_to_market");
@@ -104,6 +106,11 @@ describe("ACTION_PLANS", () => {
       expect(focusVariant[tree].statusQuoCost, `${id} ${tree} statusQuoCost`).toBeTruthy();
       expect(focusVariant[tree].expectedResult, `${id} ${tree} expectedResult`).toBeTruthy();
     });
+  });
+
+  it.each(PLANS_WITHOUT_VARIANT)("plan %s (Predictability-only) n'a pas de focusVariant", (id) => {
+    const { focusVariant } = ACTION_PLANS[id].businessPitch;
+    expect(focusVariant == null).toBe(true);
   });
 
   it.each(PLAN_IDS)("plan %s businessPitch a une leadershipQuestion non vide", (id) => {
