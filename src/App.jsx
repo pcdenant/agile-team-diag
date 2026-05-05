@@ -344,6 +344,120 @@ const ACTION_PLANS = {
       },
     },
   },
+  c1_ext: {
+    cost: "[items bloqués au démarrage] × [jours avant identification de la source] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter, sur les 3 derniers sprints, combien d'items planifiés n'ont pas démarré le premier jour et pour quelle raison.",
+    experiments: [
+      {
+        label: "Étape 1 — Tagger chaque blocage au démarrage",
+        timing: "cette semaine",
+        description: "Au prochain standup, introduire une règle simple : tout item qui ne peut pas démarrer reçoit un tag \"bloqué\" sur le board, avec deux infos : qui ou quoi bloque, depuis quand. Le SM collecte en temps réel. Pas de reconstitution après coup.",
+        criterion: "Au moins 3 items taggés avec une source identifiée, même partielle, d'ici la fin de la semaine.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Top 5 des sources de blocage au démarrage",
+        timing: "ce sprint",
+        description: "Avec les données collectées, classer les blocages par fréquence et durée. Présenter en rétro : source, nombre d'items affectés, jours d'attente. Identifier une source externe sur laquelle une action est possible — escalade, accord de service, ou re-planification.",
+        criterion: "Au moins une source externe nommée avec un responsable identifié et une action définie.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items planifiés bloqués au démarrage", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Délai entre blocage et identification de la source", target: "< 1 jour", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 5 min en Daily + revue en rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Combien de jours de capacité avons-nous perdus ce sprint sur des items qui n'ont pas pu démarrer — et pour quelle raison ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Des items planifiés ne démarrent pas, bloqués par des dépendances externes que personne n'a identifiées. Cette capacité disparaît sans trace dans chaque sprint.",
+          expectedResult: "Rendre les sources de blocage visibles permet au SM d'escalader ou de re-planifier. Le sprint ne perd plus de capacité sur des causes inconnues.",
+        },
+        time_to_market: {
+          statusQuoCost: "Chaque dépendance externe non identifiée au démarrage allonge le cycle time sans que personne ne prenne de décision. Le délai s'accumule en silence.",
+          expectedResult: "Identifier la source du blocage dès J+1 réduit le temps d'attente et permet de traiter la dépendance avant qu'elle retarde la livraison.",
+        },
+      },
+    },
+  },
+  c1_int: {
+    cost: "[items non démarrés à J+2 du sprint] × [jours avant démarrage effectif] × [coût journalier équipe]",
+    costHint: "Si les données manquent : noter à la fin du Sprint Planning quels items n'ont pas de propriétaire ou n'ont pas démarré 48h après le début du sprint.",
+    experiments: [
+      {
+        label: "Étape 1 — Nommer le blocage au moment où il se produit",
+        timing: "cette semaine",
+        description: "En Daily, ajouter une question fixe : \"Y a-t-il un item qu'on aurait dû commencer mais qu'on n'a pas encore démarré ?\" Pour chaque item concerné, noter la raison en une phrase — technique, clarification manquante, personne pas disponible, autre. Le SM centralise et ne filtre pas.",
+        criterion: "Au moins 2 items avec une raison documentée d'ici la fin de la semaine.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Rétro courte sur les non-démarrages",
+        timing: "ce sprint",
+        description: "15 minutes en fin de sprint. Question unique : \"Quels items n'ont pas démarré comme prévu, et qu'est-ce qui les a retenus ?\" Regrouper les raisons par catégorie. Le SM propose une correction sur la catégorie la plus fréquente.",
+        criterion: "Une catégorie de cause interne identifiée, avec une action corrective applicable sans escalade.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items à J+2 sans démarrage et sans raison documentée", target: "0", frequency: "Chaque sprint" },
+      { metric: "Catégories de causes internes identifiées", target: "Au moins 1 nommée par sprint", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — Daily + 15 min en rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Combien d'items planifiés n'ont pas démarré dans les 48 premières heures du sprint — et en connaît-on la raison ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Des items planifiés ne démarrent pas pour des raisons internes que personne n'a encore nommées. Tant qu'elles restent sans nom, elles reviennent au sprint suivant et la planification reste non tenue.",
+          expectedResult: "L'équipe peut corriger une cause interne sans escalade — mais il faut d'abord savoir laquelle. Nommer le blocage est la première étape pour tenir les engagements de sprint.",
+        },
+        time_to_market: {
+          statusQuoCost: "Des items ne démarrent pas à J+2, mais personne ne sait pourquoi. Cette friction interne silencieuse ajoute des jours de latence à chaque livraison sans décision consciente.",
+          expectedResult: "Identifier et catégoriser les causes de non-démarrage permet de supprimer la friction récurrente qui allonge le cycle time item par item.",
+        },
+      },
+    },
+  },
+  c_dor: {
+    cost: "[items générant une question au PO après démarrage] × [jours perdus en clarification] × [coût journalier développeur]",
+    costHint: "Si les données manquent : compter, sur les 2 derniers sprints, combien d'items ont généré une question au PO après avoir été démarrés.",
+    experiments: [
+      {
+        label: "Étape 1 — Ready check au Sprint Planning",
+        timing: "ce sprint",
+        description: "Avant d'accepter un item dans le sprint, l'équipe pose deux questions : \"Sait-on comment le faire ?\" et \"Sait-on quand on aura terminé ?\" Si l'une est \"non\", l'item reste au backlog. Le SM anime, le PO décide. Pas de négociation sur ces deux critères.",
+        criterion: "Au moins 1 item renvoyé au backlog parce qu'il n'était pas prêt, sans friction avec le PO.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Fixer 3 critères minimaux de \"prêt\"",
+        timing: "sprint suivant",
+        description: "En refinement, l'équipe et le PO s'accordent sur 3 conditions avant qu'un item entre dans un sprint. Pas une checklist de 15 points. Trois critères, validés en 10 minutes. Le SM documente. On teste un sprint.",
+        criterion: "Moins d'items générant une question PO après démarrage qu'au sprint précédent.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items générant une question PO après démarrage", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Items renvoyés au backlog au Sprint Planning", target: "Stable ou croissant (filtre actif)", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "PO + SM — 5 min en fin de Sprint Planning + revue en rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Combien de fois par sprint un développeur a dû s'arrêter parce qu'un item n'était pas suffisamment clair — et combien de jours ça a coûté ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque item qui entre en sprint sans être prêt crée une interruption en cours de route. Le développeur s'arrête, attend, relance. Ces jours perdus ne s'affichent dans aucun rapport mais rompent l'engagement de sprint.",
+          expectedResult: "20 minutes de plus au refinement évitent des jours de friction par sprint. Un filtre DoR actif réduit les interruptions et stabilise la vélocité.",
+        },
+        time_to_market: {
+          statusQuoCost: "Un item mal défini redémarre plusieurs fois : clarification, attente de réponse, reprise. Ce overhead invisible allonge le cycle time de chaque livraison.",
+          expectedResult: "Des critères de \"prêt\" clairs éliminent les allers-retours post-démarrage et réduisent directement le cycle time des items concernés.",
+        },
+      },
+    },
+  },
 };
 
 // --- DATA: SYMPTOMS (4) ---------------------------------------------------
