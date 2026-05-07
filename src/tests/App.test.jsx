@@ -413,6 +413,243 @@ describe("PlanScreen — c_cap (sans focusVariant)", () => {
   });
 });
 
+// --- ResultScreen + PlanScreen — c4_dep · c4q_dep · c_defects (Cluster 6) ---
+//
+// Chemin c4_dep :
+//   s4 → finish_state(Bloqué) → finish_blocked_nature(Extérieur) →
+//   finish_ext_type(dépendance équipe) → finish_dep_anticipable(Non, découverte) →
+//   finish_dep_quantify(Non, pas chiffré) → c4_dep
+//
+// Chemin c4q_dep :
+//   …même chemin jusqu'à finish_dep_quantify → (Oui, chiffré) →
+//   finish_dep_decision(L'équipe peut agir) → c4q_dep
+//
+// Chemin c_defects :
+//   s4 → finish_state(Bloqué) → finish_blocked_nature(Intérieur) →
+//   p_internal_nature_finish(Défauts récurrents font traîner) → c_defects
+
+async function navigateTo_finish_dep_anticipable(user) {
+  await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+  await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+  await user.click(screen.getByRole("button", { name: /Extérieur — autre équipe, dépendance ou expert inaccessible/ }));
+  await user.click(screen.getByRole("button", { name: /Une dépendance équipe ou un input externe manquant/ }));
+}
+
+async function navigateTo_c4_dep(user) {
+  await navigateTo_finish_dep_anticipable(user);
+  await user.click(screen.getByRole("button", { name: /Non — découverte en cours d'exécution/ }));
+}
+
+async function navigateTo_c4q_dep(user) {
+  await navigateTo_c4_dep(user);
+  await user.click(screen.getByRole("button", { name: /Oui, l'impact est chiffré/ }));
+}
+
+async function navigateTo_c_defects(user) {
+  await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+  await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+  await user.click(screen.getByRole("button", { name: /Intérieur — quelque chose dans notre périmètre/ }));
+}
+
+describe("ResultScreen — c4_dep (TTM)", () => {
+  it("affiche la cause c4_dep et le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_c4_dep(user);
+    await user.click(screen.getByRole("button", { name: /Non, l'impact n'est pas encore chiffré/ }));
+
+    expect(screen.getByText(/Dépendance externe découverte en exécution — non quantifiée/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le badge Palier 2", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_c4_dep(user);
+    await user.click(screen.getByRole("button", { name: /Non, l'impact n'est pas encore chiffré/ }));
+
+    expect(screen.getByText(/Palier 2/)).toBeInTheDocument();
+  });
+});
+
+describe("ResultScreen — c4q_dep (TTM)", () => {
+  it("affiche la cause c4q_dep et le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_c4q_dep(user);
+    await user.click(screen.getByRole("button", { name: /L'équipe ou moi peut agir — on n'a pas encore priorisé/ }));
+
+    expect(screen.getByText(/Dépendance externe découverte en exécution — quantifiée, décision dans le périmètre/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+});
+
+describe("ResultScreen — c_defects (TTM)", () => {
+  it("affiche la cause c_defects et le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_c_defects(user);
+    await user.click(screen.getByRole("button", { name: /Des défauts récurrents font traîner/ }));
+
+    expect(screen.getByText(/Défauts récurrents — la qualité interne freine le flux/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le badge Palier 1", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_c_defects(user);
+    await user.click(screen.getByRole("button", { name: /Des défauts récurrents font traîner/ }));
+
+    expect(screen.getByText(/Palier 1/)).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c4_dep (focus time_to_market)", () => {
+  async function goToPlanScreen_c4_dep(user) {
+    await navigateTo_c4_dep(user);
+    await user.click(screen.getByRole("button", { name: /Non, l'impact n'est pas encore chiffré/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les 4 zones du plan", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4_dep(user);
+
+    expect(screen.getByText("Impact · Objectif")).toBeInTheDocument();
+    expect(screen.getByText("Inspecter · Mesurer")).toBeInTheDocument();
+    expect(screen.getByText("Adapter · Expérimenter")).toBeInTheDocument();
+    expect(screen.getByText("Parler business")).toBeInTheDocument();
+  });
+
+  it("affiche la formule coût c4_dep", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4_dep(user);
+
+    expect(screen.getByText(/items bloqués en exécution par dépendance/)).toBeInTheDocument();
+  });
+
+  it("affiche les 2 étapes séquentielles avec le gate", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4_dep(user);
+
+    expect(screen.getByText(/Étape 1 — Tracer les dépendances actives/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Chiffrer et poser la question/)).toBeInTheDocument();
+    expect(screen.getByText(/Lancer l'étape suivante uniquement/)).toBeInTheDocument();
+  });
+
+  it("affiche les indicateurs", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4_dep(user);
+
+    expect(screen.getByText(/Dépendances tracées avec responsable identifié/)).toBeInTheDocument();
+  });
+
+  it("affiche la variante time_to_market dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4_dep(user);
+
+    expect(screen.getByText(/délai invisible en coût visible/)).toBeInTheDocument();
+  });
+
+  it("affiche la leadershipQuestion de c4_dep", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4_dep(user);
+
+    expect(screen.getByText(/Ces \[X\] jours de blocage par sprint nous coûtent/)).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c4q_dep (focus time_to_market)", () => {
+  async function goToPlanScreen_c4q_dep(user) {
+    await navigateTo_c4q_dep(user);
+    await user.click(screen.getByRole("button", { name: /L'équipe ou moi peut agir — on n'a pas encore priorisé/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les 2 étapes avec le gate", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4q_dep(user);
+
+    expect(screen.getByText(/Étape 1 — Accord de service avec la source/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Suivi actif jusqu'à résolution/)).toBeInTheDocument();
+    expect(screen.getByText(/Lancer l'étape suivante uniquement/)).toBeInTheDocument();
+  });
+
+  it("affiche l'indicateur délai moyen de résolution", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4q_dep(user);
+
+    expect(screen.getByText(/Délai moyen de résolution des dépendances actives/)).toBeInTheDocument();
+  });
+
+  it("affiche la variante time_to_market dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4q_dep(user);
+
+    expect(screen.getByText(/engagement daté/)).toBeInTheDocument();
+  });
+
+  it("affiche la leadershipQuestion de c4q_dep", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c4q_dep(user);
+
+    expect(screen.getByText(/La décision est dans notre périmètre/)).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c_defects (focus time_to_market)", () => {
+  async function goToPlanScreen_c_defects(user) {
+    await navigateTo_c_defects(user);
+    await user.click(screen.getByRole("button", { name: /Des défauts récurrents font traîner/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les 2 étapes séquentielles avec le gate", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_defects(user);
+
+    expect(screen.getByText(/Étape 1 — Mesurer le rework/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Identifier les patterns/)).toBeInTheDocument();
+    expect(screen.getByText(/Lancer l'étape suivante uniquement/)).toBeInTheDocument();
+  });
+
+  it("affiche l'indicateur taux de rework", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_defects(user);
+
+    expect(screen.getByText(/Taux de rework/)).toBeInTheDocument();
+  });
+
+  it("affiche la variante time_to_market dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_defects(user);
+
+    expect(screen.getByText(/cycle time des items concernés/)).toBeInTheDocument();
+  });
+
+  it("affiche la leadershipQuestion de c_defects", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_defects(user);
+
+    expect(screen.getByText(/rework consomme \[X\] jours de capacité par sprint/)).toBeInTheDocument();
+  });
+});
+
 // --- teamName ----------------------------------------------------------------
 
 describe("teamName", () => {
