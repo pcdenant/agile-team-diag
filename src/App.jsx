@@ -694,6 +694,125 @@ const ACTION_PLANS = {
       },
     },
   },
+
+  c4_dep: {
+    cost: "[items bloqués en exécution par dépendance] × [jours de blocage moyen] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter les items en \"In Progress\" avec une note \"en attente de [équipe / rôle externe]\" sur les 3 derniers sprints.",
+    experiments: [
+      {
+        label: "Étape 1 — Tracer les dépendances actives",
+        timing: "cette semaine",
+        description: "Pour chaque item bloqué en exécution : noter la source (quelle équipe, quel rôle, quel système), la date de blocage, le nombre d'items affectés. Un tableau partagé suffit. 30 minutes avec l'équipe en Daily ou en fin de sprint.",
+        criterion: "Chaque dépendance active a un responsable identifié et une date de blocage connue.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Chiffrer et poser la question",
+        timing: "ce sprint",
+        description: "Calculer les jours perdus par dépendance. Préparer un mini-rapport : source, items affectés, jours bloqués, coût estimé. Présenter au PO et à la strate concernée. Question à poser : \"On sait que ça coûte [X] jours par sprint. Pourquoi ce n'est pas encore résolu ?\"",
+        criterion: "L'impact est chiffré pour les 3 dépendances les plus coûteuses. Au moins une a une décision ou un engagement de résolution dans les 2 semaines.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Dépendances découvertes en exécution (non anticipées)", target: "Tendance baissière sur 3 sprints", frequency: "Chaque sprint" },
+      { metric: "Durée moyenne de blocage par dépendance", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Dépendances tracées avec responsable identifié", target: "100% des dépendances actives", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 10 min intégré à la rétro ou la Sprint Review.",
+    businessPitch: {
+      leadershipQuestion: "\"Ces [X] jours de blocage par sprint nous coûtent [$Y]. Qu'est-ce qui empêche de résoudre ça maintenant ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque dépendance découverte en exécution consomme de la capacité de sprint sans produire de valeur. Sur [X] sprints, ça représente [Y] jours perdus — soit [Z]% de la capacité planifiée qui ne livre rien.",
+          expectedResult: "Tracer et chiffrer ces dépendances, c'est la condition pour récupérer cette capacité.",
+        },
+        time_to_market: {
+          statusQuoCost: "Une dépendance non tracée allonge le cycle time sans que personne ne prenne de décision. Chaque jour de blocage non documenté est un jour de délai que le leadership ne voit pas.",
+          expectedResult: "Tracer et chiffrer chaque blocage transforme un délai invisible en coût visible — condition pour qu'une décision de résolution soit prise.",
+        },
+      },
+    },
+  },
+
+  c4q_dep: {
+    cost: "[items bloqués en exécution] × [jours de blocage moyen] × [coût journalier équipe]",
+    costHint: "La donnée existe déjà : [X] items bloqués, [Y] jours perdus par sprint. Si ce calcul n'est pas formalisé : compter les items qui ont attendu une réponse externe plus de 2 jours sur les 3 derniers sprints.",
+    experiments: [
+      {
+        label: "Étape 1 — Accord de service avec la source",
+        timing: "cette semaine",
+        description: "Contacter directement l'équipe, le rôle ou le système responsable. Objectif : un accord minimal sur un canal de réponse et un délai maximum. Pas une réunion de plus : un Slack, un email, une fréquence. Documenter l'accord par écrit.",
+        criterion: "Un accord de service est en place : canal de contact + délai de réponse attendu pour chaque source récurrente.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Suivi actif jusqu'à résolution",
+        timing: "sprint suivant",
+        description: "Suivre chaque dépendance active jusqu'à sa résolution. Si le délai convenu n'est pas respecté : escalade immédiate au PO. Le rapport de dépendances est un outil de conversation, pas un document d'audit.",
+        criterion: "Le délai moyen de résolution des dépendances actives passe sous [X] jours sur 2 sprints consécutifs.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Délai moyen de résolution des dépendances actives", target: "< [X] jours", frequency: "Chaque sprint" },
+      { metric: "% d'items terminés sans blocage externe", target: "Tendance haussière sur 3 sprints", frequency: "Chaque sprint" },
+      { metric: "Sources récurrentes avec accord de service", target: "100%", frequency: "Après sprint 2" },
+    ],
+    ownerNote: "SM — 10 min intégré à la rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"On a chiffré le coût à [$X] par sprint. La décision est dans notre périmètre. Qu'est-ce qu'on attend ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Le coût est chiffré : [X] jours perdus par sprint, [$Y] par cycle. Ce n'est pas un problème de données. C'est un problème de décision.",
+          expectedResult: "Mettre un accord de service en place avec la source ne nécessite pas de budget. C'est une conversation à avoir.",
+        },
+        time_to_market: {
+          statusQuoCost: "Chaque dépendance non résolue ajoute directement du délai au cycle time. Les chiffres sont là. La question n'est plus \"est-ce que ça coûte quelque chose\" : c'est \"qui décide de le résoudre, et quand ?\"",
+          expectedResult: "Un accord de service avec délai maximum garanti transforme chaque dépendance active en engagement daté. Le cycle time des items concernés se réduit sprint après sprint.",
+        },
+      },
+    },
+  },
+
+  c_defects: {
+    cost: "[items retournés en rework] × [jours de rework moyen] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter combien d'items ont retraversé une colonne \"In Progress\" ou \"In Review\" sur les 3 derniers sprints.",
+    experiments: [
+      {
+        label: "Étape 1 — Mesurer le rework",
+        timing: "cette semaine",
+        description: "Reprendre rétrospectivement les 3 derniers sprints. Identifier les items qui ont été retournés en \"In Progress\" depuis \"Done\", \"Review\" ou \"Testing\". Pour chaque item : noter la raison du retour (bug, test raté, critère d'acceptance manqué). 30 minutes avec l'équipe.",
+        criterion: "Le taux de rework des 3 derniers sprints est calculé. Les 3 raisons de retour les plus fréquentes sont identifiées.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Identifier les patterns",
+        timing: "ce sprint",
+        description: "Regrouper les raisons de retour par catégorie. Si la même raison revient sur 3 items ou plus : ce n'est pas un incident, c'est un signal systémique. Présenter les patterns au Tech lead. Désigner un owner pour chaque pattern prioritaire avant la prochaine rétro.",
+        criterion: "Au moins un pattern récurrent a un owner désigné et une hypothèse de solution formulée.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Taux de rework (% items retournés après \"Done\")", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Délai additionnel moyen par item avec rework", target: "Tendance baissière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "Tech lead + SM — 10 min intégré à la rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Notre rework consomme [X] jours de capacité par sprint. Si on réduit ça de moitié, qu'est-ce qu'on pourrait livrer de plus ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque item qui revient en rework consomme de la capacité prévue pour du nouveau travail. Sur [X] sprints, [Y]% de la capacité a été reconsommée en corrections. C'est de la prévisibilité perdue directement, sprint après sprint.",
+          expectedResult: "Identifier les patterns de rework et désigner un owner par cause réduit la reconsommation de capacité. Ce qui était perdu en correction devient disponible pour du nouveau travail.",
+        },
+        time_to_market: {
+          statusQuoCost: "Un item avec rework prend [X] fois plus de temps qu'un item propre. Ce délai n'est pas dans les plannings. Il ne se voit pas dans la roadmap. Il s'accumule en silence.",
+          expectedResult: "Réduire les causes de rework réduit directement le cycle time des items concernés, sans changer la vélocité planifiée.",
+        },
+      },
+    },
+  },
 };
 
 // --- DATA: SYMPTOMS (4) ---------------------------------------------------
