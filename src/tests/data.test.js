@@ -51,13 +51,13 @@ describe("CAUSES", () => {
 
 // --- ACTION_PLANS ------------------------------------------------------------
 
-const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c2", "c2q", "c_cap"];
-const PLANS_WITH_VARIANT = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor"];
+const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c2", "c2q", "c_cap", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable"];
+const PLANS_WITH_VARIANT = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable"];
 const PLANS_WITHOUT_VARIANT = ["c2", "c2q", "c_cap"];
 
 describe("ACTION_PLANS", () => {
-  it("contient exactement 11 plans implémentés", () => {
-    expect(Object.keys(ACTION_PLANS)).toHaveLength(11);
+  it("contient exactement 15 plans implémentés", () => {
+    expect(Object.keys(ACTION_PLANS)).toHaveLength(15);
     PLAN_IDS.forEach((id) => expect(ACTION_PLANS).toHaveProperty(id));
   });
 
