@@ -542,6 +542,158 @@ const ACTION_PLANS = {
       leadershipQuestion: "\"On paie pour [X] jours de capacité par sprint et on en récupère [Y]. Est-ce qu'on ajuste ce qu'on leur donne, ou est-ce qu'on accepte que le reste ne soit pas livré ?\"",
     },
   },
+  c3_ext: {
+    cost: "[items bloqués en exécution] × [jours de blocage moyen] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter combien d'items affichaient un bloqueur sans source nommée lors des 3 dernières Sprint Reviews.",
+    experiments: [
+      {
+        label: "Étape 1 — Nommer le bloqueur",
+        timing: "cette semaine",
+        description: "15 minutes en standup étendu ou en flash rétro. Une seule question par item bloqué : \"Qu'est-ce qui empêche concrètement de fermer cet item ?\" Pour chaque item : qui est impliqué à l'extérieur de l'équipe, depuis combien de jours, et pourquoi ça n'a pas bougé.",
+        criterion: "Chaque item bloqué a une source externe nommée — une équipe, un système, un rôle — et une durée documentée.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Signaler et escalader",
+        timing: "ce sprint",
+        description: "Ajouter chaque dépendance externe identifiée dans le Top 5 Blockers. Pour chaque entrée : source, durée, items affectés. Partager avec le responsable de la dépendance dans les 48h.",
+        criterion: "Au moins une dépendance externe a été escaladée et a reçu une réponse dans les 48h.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items bloqués sans source nommée", target: "0", frequency: "Chaque standup" },
+      { metric: "Durée moyenne de blocage externe en exécution", target: "Tendance baissière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 5 min en standup via walk du board.",
+    businessPitch: {
+      leadershipQuestion: "\"Est-ce qu'on a une liste des dépendances externes qui bloquent l'équipe en ce moment — et est-ce que chacune a un responsable côté [équipe ou département concerné] ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Un item bloqué par une dépendance externe non nommée ne peut pas être résolu. Personne ne sait à qui parler. Chaque jour sans identification est un jour de sprint perdu sur un item qui semblait en cours.",
+          expectedResult: "Nommer la source permet l'escalade. La capacité gelée sur cet item redevient actionnable dès que quelqu'un sait à qui s'adresser.",
+        },
+        time_to_market: {
+          statusQuoCost: "Une dépendance externe inconnue en exécution allonge le cycle time sans que l'équipe puisse agir.",
+          expectedResult: "Identifier la source ne résout pas le problème — c'est juste la seule condition pour qu'il le soit.",
+        },
+      },
+    },
+  },
+  c3_int: {
+    cost: "[items en cours sans mouvement] × [jours sans avancement] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter les items restés \"In Progress\" plus de [durée d'un sprint] sans mouvement lors des 3 derniers sprints.",
+    experiments: [
+      {
+        label: "Étape 1 — Rendre le blocage visible",
+        timing: "cette semaine",
+        description: "En standup : pour chaque item \"In Progress\" sans mouvement depuis [X] jours, une question — \"Qu'est-ce qui manque pour avancer ?\" Si personne ne peut répondre, l'item passe en état \"Bloqué\" sur le board avec une note de contexte.",
+        criterion: "Tous les items en cours depuis plus de [X] jours ont soit une raison de blocage documentée, soit une action de déblocage assignée.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Identifier le pattern",
+        timing: "ce sprint",
+        description: "En rétro ou en session dédiée de 30 minutes : regrouper les blocages internes par type — technique, connaissance manquante, clarification fonctionnelle, coordination interne. Identifier le type le plus fréquent.",
+        criterion: "Au moins une catégorie de blocage interne récurrent est nommée et documentée.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items \"In Progress\" sans mouvement depuis [X] jours", target: "0", frequency: "Chaque standup" },
+      { metric: "Items bloqués sans raison documentée", target: "0", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM — 5 min en standup via walk du board, 10 min en rétro pour le pattern.",
+    businessPitch: {
+      leadershipQuestion: "\"Est-ce qu'on sait combien d'items sont en cours depuis plus de [X] jours en ce moment — et est-ce qu'on connaît la raison pour chacun ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Un item \"In Progress\" sans raison de blocage identifiée est invisible pour tout le monde, y compris l'équipe. On ne peut pas débloquer ce qu'on ne voit pas. Ces items gonflent le WIP sans produire de valeur et disparaissent dans les métriques de vélocité.",
+          expectedResult: "Rendre le blocage visible est la première condition pour débloquer la capacité cachée dans le WIP et tenir les engagements de sprint.",
+        },
+        time_to_market: {
+          statusQuoCost: "Chaque jour passé \"en cours\" sans avancement allonge le cycle time sans qu'il soit possible d'intervenir.",
+          expectedResult: "Rendre le blocage interne visible ne le résout pas — mais sans ça, le cycle time continue de croître sans que personne comprenne pourquoi.",
+        },
+      },
+    },
+  },
+  c_anticipation: {
+    cost: "[dépendances découvertes en exécution] × [jours de blocage moyen] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter combien de bloqueurs soulevés pendant le sprint auraient pu être identifiés en refinement ou en Sprint Planning si la question avait été posée.",
+    experiments: [
+      {
+        label: "Étape 1 — Poser la question en refinement",
+        timing: "ce sprint",
+        description: "Ajouter une question systématique pour chaque item au refinement : \"Est-ce que cet item dépend d'une autre équipe, d'un système, ou d'un expert externe ?\" Si oui, documenter la dépendance avant que l'item entre en sprint. Pas de ticket sans réponse à cette question.",
+        criterion: "0 dépendance externe découverte pour la première fois en exécution lors du prochain sprint.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Tenir un tableau de dépendances anticipées",
+        timing: "sprint suivant",
+        description: "Créer et maintenir un tableau simple des dépendances connues à venir : source, item concerné, date limite. Réviser en Sprint Planning et en standup hebdomadaire. Un responsable de suivi côté équipe par dépendance.",
+        criterion: "Toutes les dépendances connues ont un responsable de suivi identifié avant le démarrage du sprint.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Dépendances découvertes pour la première fois en exécution", target: "0", frequency: "Chaque sprint" },
+      { metric: "Dépendances anticipées et documentées avant le sprint", target: "Tendance haussière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "SM + PO — 5 min en refinement, intégré comme critère dans la checklist \"prêt à démarrer\".",
+    businessPitch: {
+      leadershipQuestion: "\"Sur les [X] derniers sprints, combien de blocages auraient pu être identifiés avant de démarrer le sprint — et qu'est-ce qui nous a empêchés de les voir ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Une dépendance externe découverte en milieu de sprint ne peut pas être résolue dans le sprint. Elle génère du carryover prévisible. Ce n'est pas de la complexité — c'est une question oubliée au mauvais moment.",
+          expectedResult: "Poser la question de la dépendance en refinement supprime ce carryover sans effort supplémentaire pendant le sprint.",
+        },
+        time_to_market: {
+          statusQuoCost: "La découvrir en exécution coûte [X] jours de cycle time par occurrence. Poser la question de la dépendance en refinement prend 2 minutes.",
+          expectedResult: "Le delta est entièrement évitable avec une checklist de 3 questions.",
+        },
+      },
+    },
+  },
+  c_skill_unavailable: {
+    cost: "[items bloqués sur ce skill] × [jours d'attente moyen] × [coût journalier équipe]",
+    costHint: "Si les données manquent : identifier combien d'items ont attendu la disponibilité d'une même personne ou d'un même rôle lors des 3 derniers sprints.",
+    experiments: [
+      {
+        label: "Étape 1 — Nommer le goulot",
+        timing: "cette semaine",
+        description: "20 minutes avec l'équipe, board visible. Trois questions : quel skill manque, qui est la seule personne capable de le couvrir, depuis combien de sprints ce pattern se répète. Documenter les items affectés et la durée de blocage par item.",
+        criterion: "Le skill manquant est nommé, la durée du blocage est tracée, les items affectés sont listés.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Élargir le goulot",
+        timing: "ce sprint",
+        description: "Choisir une option selon le contexte : swarming (un membre de l'équipe travaille en binôme avec l'expert pour co-faire et apprendre), pair programming si le skill est technique, ou documentation des cas les plus fréquents si le skill est procédural. L'objectif est qu'une deuxième personne puisse couvrir les cas simples.",
+        criterion: "Au moins un autre membre de l'équipe peut traiter les cas simples liés à ce skill d'ici [X] sprints.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items bloqués sur une dépendance de skill unique", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Nombre de personnes capables d'intervenir sur ce skill", target: "+1 d'ici [X] sprints", frequency: "Par sprint" },
+    ],
+    ownerNote: "SM — suivi via item age des items concernés en standup, bilan en rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Est-ce qu'on a des items qui ne peuvent avancer que si [nom ou rôle] est disponible — et si cette personne n'est pas là, qu'est-ce qui se passe ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Quand un seul expert détient un skill critique, toute indisponibilité crée un blocage prévisible. On ne peut pas tenir le sprint commitment si la seule personne capable est occupée ailleurs ou absente.",
+          expectedResult: "Ce n'est pas un manque de capacité globale — c'est une dépendance concentrée sur une personne. Élargir ce skill à une deuxième personne suffit à supprimer le goulot.",
+        },
+        time_to_market: {
+          statusQuoCost: "Un goulot de skill ralentit tout le flux en aval. L'item attend. Le cycle time augmente. Ajouter des personnes à l'équipe ne change rien si le goulot reste concentré sur un seul point de compétence.",
+          expectedResult: "Transférer le skill à une deuxième personne est la seule action efficace pour réduire ce cycle time.",
+        },
+      },
+    },
+  },
 };
 
 // --- DATA: SYMPTOMS (4) ---------------------------------------------------
