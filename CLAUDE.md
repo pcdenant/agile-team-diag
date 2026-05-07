@@ -5,22 +5,26 @@
 
 ## 1. PROJECT
 
-**Name:** [PROJECT NAME]
-**Purpose:** [One sentence. Problem solved. For whom.]
-**Status:** [ ] Exploration · [ ] MVP · [ ] Production
+**Name:** agile-team-diag
+**Purpose:** Interactive diagnostic tool for Scrum Masters, Agile Coaches, and Managers to identify root causes of flow dysfunction in Agile teams and generate structured 48-hour action plans.
+**Status:** [ ] Exploration · [x] MVP · [ ] Production
 **Owner:** Pierre-Cyril Denant
 
 **Stack:**
-- Frontend: [React + TypeScript / Next.js App Router]
-- Backend: [Node.js + TypeScript / Next.js API Routes]
-- DB: [PostgreSQL / SQLite / MongoDB]
-- Styling: [Tailwind / CSS Modules]
-- Deploy: [Vercel / Railway / Fly.io]
+- Frontend: React 18 + Vite (SPA, no SSR)
+- Backend: None — pure client-side application
+- DB: None — all data is static in-memory JS objects
+- Styling: Inline styles with shared design tokens (COLORS, FONT, TYPE constants)
+- Deploy: Static site (Vite build output, deployment not yet configured)
 
 **Key decisions:**
-- [e.g. Server Components by default, Client Components explicit]
-- [e.g. No ORM — raw SQL with pg]
-- [e.g. useState + Context only, no Redux]
+- Monolithic App.jsx — all data + components in one file; refactor deferred
+- No backend — standalone diagnostic tool, zero external API calls
+- Inline styles over CSS framework — token objects instead of Tailwind/CSS Modules
+- Runtime validation — validateTrees() runs at module load to catch authoring errors
+- Shared diagnostic tree nodes — predictability and TTM trees share reusable branches
+- French-only content — no i18n scaffolding; multi-language would require full refactor
+- useState only — no Context, Redux, or external state library
 
 ---
 
@@ -70,21 +74,19 @@
 
 ## 4. CODE STANDARDS
 
-**TypeScript:** `strict: true`, zero `any` (use `unknown`), explicit return types, interfaces for public objects.
+**JavaScript:** Strict mode enabled (ESM modules), no implicit globals, explicit `undefined` checks over truthiness.
 
 **Functions:** One responsibility, max 20 lines, max 3 params (use object if more), verb names (`getUserById`), early return over nested if/else.
 
-**Naming:** `camelCase` vars/functions · `PascalCase` components · `UPPER_SNAKE_CASE` constants · `kebab-case.ts` files · `MyComponent.tsx` components.
+**Naming:** `camelCase` vars/functions · `PascalCase` components · `UPPER_SNAKE_CASE` constants · `kebab-case.js` files · `MyComponent.jsx` components.
 
-**Comments:** Comment the WHY, never the WHAT. Code must be readable without comments. JSDoc on all exported public functions.
+**Comments:** Comment the WHY, never the WHAT. Code must be readable without comments. JSDoc on all exported/public functions.
 
-**Error handling:** Never empty `catch`. Log errors with context. Return explicit error types, not `null`. Use Result pattern or Error subclasses for business errors.
+**Error handling:** Never empty `catch`. Log errors with context. Return explicit error values, not `null`. Use descriptive Error messages for business errors.
 
-**React:** Functional components only. Props typed with explicit interface. Extract business logic into custom hooks. Ternary for conditional render (not `&&` — risk of `0` rendered).
+**React:** Functional components only. Props documented with JSDoc or PropTypes where non-obvious. Extract business logic into custom hooks. Ternary for conditional render (not `&&` — risk of `0` rendered).
 
 **State:** `useState` local · `useReducer` for 3+ related fields · Context for truly global data only.
-
-**API routes:** Handler = orchestration only. Business logic in services/. DB access in repositories/. Validate all inputs with Zod at route boundary.
 
 ---
 
@@ -111,7 +113,7 @@
 | Tests | vitest or jest |
 | Component tests | React Testing Library |
 | E2E | Playwright (critical paths only) |
-| Styles | Tailwind CSS |
+| Styles | Inline styles (token objects — COLORS, FONT, TYPE in App.jsx) |
 | Icons | lucide-react |
 
 **Before adding any lib:** Can it be done natively in < 20 lines? Repo active (< 6 months)? License MIT/Apache 2.0? If yes to all → propose it, wait for approval.
@@ -129,7 +131,7 @@ test: add coverage for auth service
 docs: update API endpoint documentation
 ```
 
-**Pre-commit gate:** lint passes · typecheck passes · related tests pass · no `console.log` · no `.env` included.
+**Pre-commit gate:** lint passes · tests pass · no `console.log` · no `.env` included.
 
 **Branches:** `main` (production, protected) · `dev` (integration) · `feat/[name]` · `fix/[name]`
 
@@ -140,18 +142,20 @@ docs: update API endpoint documentation
 ```
 /
 ├── src/
-│   ├── app/          # Next.js App Router OR Express entry
-│   ├── components/   # UI components (no business logic)
-│   ├── features/     # Feature modules (logic + UI co-located)
-│   ├── lib/          # Shared utilities, clients, helpers
-│   ├── hooks/        # Custom React hooks
-│   ├── services/     # External APIs, business logic
-│   ├── repositories/ # DB access layer
-│   ├── types/        # Shared TypeScript types
-│   └── config/       # App config, env access
-├── tests/            # Mirrors src/ structure
-├── .env.example
+│   ├── App.jsx       # Entire application — data, components, logic (monolithic for now)
+│   ├── main.jsx      # React entry point
+│   ├── index.css     # Minimal reset
+│   └── tests/
+│       ├── App.test.jsx     # Integration tests (component flows)
+│       ├── data.test.js     # Data structure validation
+│       ├── helpers.test.js  # Utility function tests
+│       └── setup.js         # Vitest global setup
+├── docs/
+│   ├── ARCHITECTURE.md  # Technical structure of App.jsx
+│   └── PRD.md           # Product requirements and diagnostic logic
+├── index.html
+├── vite.config.js
 └── CLAUDE.md
 ```
 
-*Updated: [DATE]*
+*Updated: 2026-05-07*
