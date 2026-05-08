@@ -14,17 +14,21 @@
 - Frontend: React 18 + Vite (SPA, no SSR)
 - Backend: None — pure client-side application
 - DB: None — all data is static in-memory JS objects
-- Styling: Inline styles with shared design tokens (COLORS, FONT, TYPE constants)
-- Deploy: Static site (Vite build output, deployment not yet configured)
+- Styling: Inline styles with shared design tokens (`C`, `FONT`, `MONO` in App.jsx)
+- Deploy: Vercel (static site, auto-deploy on merge to main)
 
 **Key decisions:**
-- Monolithic App.jsx — all data + components in one file; refactor deferred
+- Data in `src/data/` — causes, actionPlans, symptoms, trees extracted from App.jsx
+- PlanScreen split into 4 sub-components in `src/components/`
+- App.jsx exports style tokens consumed by sub-components (no prop drilling, no Context)
+- Named constants in `src/constants.js` (STEPS, TREE_IDS) — no magic strings
 - No backend — standalone diagnostic tool, zero external API calls
 - Inline styles over CSS framework — token objects instead of Tailwind/CSS Modules
 - Runtime validation — validateTrees() runs at module load to catch authoring errors
 - Shared diagnostic tree nodes — predictability and TTM trees share reusable branches
 - French-only content — no i18n scaffolding; multi-language would require full refactor
 - useState only — no Context, Redux, or external state library
+- All 21 action plans implemented (21/21)
 
 ---
 
@@ -113,7 +117,7 @@
 | Tests | vitest or jest |
 | Component tests | React Testing Library |
 | E2E | Playwright (critical paths only) |
-| Styles | Inline styles (token objects — COLORS, FONT, TYPE in App.jsx) |
+| Styles | Inline styles (token objects — C, FONT, MONO in App.jsx) |
 | Icons | lucide-react |
 
 **Before adding any lib:** Can it be done natively in < 20 lines? Repo active (< 6 months)? License MIT/Apache 2.0? If yes to all → propose it, wait for approval.
@@ -142,20 +146,33 @@ docs: update API endpoint documentation
 ```
 /
 ├── src/
-│   ├── App.jsx       # Entire application — data, components, logic (monolithic for now)
-│   ├── main.jsx      # React entry point
-│   ├── index.css     # Minimal reset
+│   ├── App.jsx           # UI, navigation, validation, helpers, style token exports
+│   ├── main.jsx          # React entry point
+│   ├── constants.js      # STEPS, TREE_IDS
+│   ├── index.css         # Minimal reset
+│   ├── data/
+│   │   ├── causes.js     # CAUSES — 21 causes + exit_observe
+│   │   ├── actionPlans.js # ACTION_PLANS — 21/21 implemented
+│   │   ├── symptoms.js   # SYMPTOMS — 4 symptoms
+│   │   └── trees.js      # SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES
+│   ├── components/
+│   │   ├── PlanHeader.jsx
+│   │   ├── PlanMetrics.jsx
+│   │   ├── PlanBusinessPitch.jsx
+│   │   └── PlanExperiments.jsx
 │   └── tests/
 │       ├── App.test.jsx     # Integration tests (component flows)
 │       ├── data.test.js     # Data structure validation
 │       ├── helpers.test.js  # Utility function tests
 │       └── setup.js         # Vitest global setup
 ├── docs/
-│   ├── ARCHITECTURE.md  # Technical structure of App.jsx
+│   ├── ARCHITECTURE.md  # Technical structure (multi-file)
 │   └── PRD.md           # Product requirements and diagnostic logic
+├── README.md
+├── CHANGELOG.md
 ├── index.html
 ├── vite.config.js
 └── CLAUDE.md
 ```
 
-*Updated: 2026-05-07*
+*Updated: 2026-05-08*
