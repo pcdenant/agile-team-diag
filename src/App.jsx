@@ -4,6 +4,10 @@ import { ACTION_PLANS } from "./data/actionPlans.js";
 import { SYMPTOMS } from "./data/symptoms.js";
 import { SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES } from "./data/trees.js";
 import { STEPS } from "./constants.js";
+import PlanHeader from "./components/PlanHeader.jsx";
+import PlanMetrics from "./components/PlanMetrics.jsx";
+import PlanBusinessPitch from "./components/PlanBusinessPitch.jsx";
+import PlanExperiments from "./components/PlanExperiments.jsx";
 
 // --- RUNTIME VALIDATION ---------------------------------------------------
 
@@ -267,125 +271,10 @@ function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBa
   return (
     <div>
       <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Retour au résultat" />
-
-      {/* En-tête plan */}
-      <div style={{ marginBottom: 24 }}>
-        <SectionTitle n={String(path.length + 3).padStart(2, "0")} label="Plan d'action" nodeId={terminalId} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: C.ink, marginBottom: 6 }}>{cause.label}</div>
-        {teamName && <div style={{ fontSize: 13, color: C.muted }}>Équipe : {teamName}</div>}
-      </div>
-
-      {/* Zone 1 — 2 colonnes */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20, alignItems: "start" }}>
-        {/* Col gauche — Impact · Objectif */}
-        <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
-          <div style={sectionHeaderStyle}>Impact · Objectif</div>
-
-          {/* Formule coût */}
-          <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, borderRadius: 4, padding: "10px 12px", marginBottom: 10 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: C.hintText, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Ce que ça coûte</div>
-            <div style={{ fontFamily: MONO, fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{plan.cost}</div>
-          </div>
-          {plan.costHint && (
-            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5, marginBottom: 14 }}>{plan.costHint}</div>
-          )}
-
-          {/* Indicateurs */}
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Mesures de succès</div>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: "left", color: C.muted, fontWeight: 600, paddingBottom: 4, borderBottom: `1px solid ${C.border}`, paddingRight: 8 }}>Métrique</th>
-                <th style={{ textAlign: "right", color: C.muted, fontWeight: 600, paddingBottom: 4, borderBottom: `1px solid ${C.border}`, paddingRight: 8 }}>Cible</th>
-                <th style={{ textAlign: "right", color: C.muted, fontWeight: 600, paddingBottom: 4, borderBottom: `1px solid ${C.border}` }}>Fréquence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {plan.indicators.map((ind, i) => (
-                <tr key={i}>
-                  <td style={{ padding: "6px 8px 6px 0", color: C.text, lineHeight: 1.4, borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none" }}>{ind.metric}</td>
-                  <td style={{ padding: "6px 8px", color: C.ink, fontWeight: 500, textAlign: "right", borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none", whiteSpace: "nowrap" }}>{ind.target}</td>
-                  <td style={{ padding: "6px 0 6px 8px", color: C.muted, textAlign: "right", borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none", whiteSpace: "nowrap" }}>{ind.frequency}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div style={{ marginTop: 12, fontSize: 11, color: C.muted, fontStyle: "italic" }}>{plan.ownerNote}</div>
-        </div>
-
-        {/* Col droite — Inspecter · Mesurer */}
-        <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
-          <div style={sectionHeaderStyle}>Inspecter · Mesurer</div>
-          <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>
-            Collecter les données dès maintenant — sans reconstituer après coup.
-          </div>
-          <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, marginBottom: 10 }}>
-            <strong style={{ color: C.ink }}>Quoi :</strong> Pour chaque item bloqué, noter la cause, la date de début, et le responsable de résolution.
-          </div>
-          <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.55 }}>
-            <strong style={{ color: C.ink }}>Comment :</strong> Voir Étape 1 ci-dessous — le tag sur le board est la seule action requise cette semaine.
-          </div>
-          <div style={{ marginTop: 14, borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
-            <Badge color={sev}>Sévérité : {severityLabel(cause.severity)}</Badge>
-            {" "}
-            <Badge color={C.borderStrong}>Propriétaire : {cause.owner}</Badge>
-          </div>
-        </div>
-      </div>
-
-      {/* Zone 2 — Parler business (pleine largeur) */}
-      {(variant || pitch.leadershipQuestion) && (
-        <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface, marginBottom: 20 }}>
-          <div style={sectionHeaderStyle}>Parler business</div>
-          {variant && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Statu quo</div>
-                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55 }}>{variant.statusQuoCost}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Résultat attendu</div>
-                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55 }}>{variant.expectedResult}</div>
-              </div>
-            </div>
-          )}
-          {pitch.leadershipQuestion && (
-            <div style={{ background: C.infoBg, border: `1px solid ${C.infoBorder}`, borderRadius: 4, padding: "10px 14px" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: C.infoText, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Question à poser au management</div>
-              <div style={{ fontSize: 13, color: C.infoTextDark, lineHeight: 1.5, fontStyle: "italic" }}>{pitch.leadershipQuestion}</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Zone 3 — Adapter · Expérimenter (pleine largeur) */}
-      <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface, marginBottom: 24 }}>
-        <div style={{ ...sectionHeaderStyle, marginBottom: 16 }}>Adapter · Expérimenter</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-          {plan.experiments.map((exp, i) => (
-            <div key={i}>
-              <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "14px 16px", background: "#fafafa" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{exp.label}</span>
-                  <Badge color={C.muted}>{exp.timing}</Badge>
-                </div>
-                <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>{exp.description}</div>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, color: "#166534", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 4, padding: "8px 10px" }}>
-                  <span style={{ fontWeight: 700, flexShrink: 0 }}>✓</span>
-                  <span>{exp.criterion}</span>
-                </div>
-              </div>
-              {exp.gate && i < plan.experiments.length - 1 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", fontSize: 11, color: C.muted }}>
-                  <div style={{ flex: 1, height: 1, background: C.border }} />
-                  <span style={{ whiteSpace: "nowrap" }}>Lancer l'étape suivante uniquement quand celle-ci est conclue</span>
-                  <div style={{ flex: 1, height: 1, background: C.border }} />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <PlanHeader cause={cause} teamName={teamName} path={path} terminalId={terminalId} />
+      <PlanMetrics plan={plan} cause={cause} sev={sev} />
+      <PlanBusinessPitch pitch={pitch} variant={variant} />
+      <PlanExperiments experiments={plan.experiments} />
     </div>
   );
 }
@@ -444,4 +333,4 @@ const btnReset = { font: "inherit", color: "inherit", outline: "none" };
 const linkBtn = { ...btnReset, border: "none", background: "transparent", fontSize: 12, color: C.muted, cursor: "pointer", padding: "4px 6px", textDecoration: "underline", textUnderlineOffset: 3 };
 const primaryBtn = { ...btnReset, border: `1px solid ${C.ink}`, background: C.ink, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "10px 20px", borderRadius: 6, letterSpacing: 0.2 };
 
-export { CAUSES, ACTION_PLANS, SYMPTOMS, TREES, SHARED_NODES, lookupNode, severityLabel, severityColor, palierMeta, validateTrees };
+export { CAUSES, ACTION_PLANS, SYMPTOMS, TREES, SHARED_NODES, lookupNode, severityLabel, severityColor, palierMeta, validateTrees, C, MONO, sectionHeaderStyle, Badge, SectionTitle };
