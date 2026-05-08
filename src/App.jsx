@@ -75,6 +75,12 @@ const C = {
   high: "#b91c1c", med: "#b45309", low: "#737373",
   palier1: "#0369a1", palier2: "#7c3aed", palier3: "#b91c1c", palierObs: "#737373",
   hintBg: "#fef9c3", hintBorder: "#fde047", hintText: "#713f12",
+  infoBg: "#f0f9ff", infoBorder: "#bae6fd", infoText: "#0369a1", infoTextDark: "#0c4a6e",
+};
+
+const sectionHeaderStyle = {
+  fontSize: 11, fontWeight: 700, color: C.muted,
+  textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12,
 };
 
 function severityLabel(s) { return s === "high" ? "Critique" : s === "medium" ? "Modéré" : "Faible"; }
@@ -273,7 +279,7 @@ function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBa
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20, alignItems: "start" }}>
         {/* Col gauche — Impact · Objectif */}
         <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Impact · Objectif</div>
+          <div style={sectionHeaderStyle}>Impact · Objectif</div>
 
           {/* Formule coût */}
           <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, borderRadius: 4, padding: "10px 12px", marginBottom: 10 }}>
@@ -309,7 +315,7 @@ function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBa
 
         {/* Col droite — Inspecter · Mesurer */}
         <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Inspecter · Mesurer</div>
+          <div style={sectionHeaderStyle}>Inspecter · Mesurer</div>
           <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>
             Collecter les données dès maintenant — sans reconstituer après coup.
           </div>
@@ -330,7 +336,7 @@ function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBa
       {/* Zone 2 — Parler business (pleine largeur) */}
       {(variant || pitch.leadershipQuestion) && (
         <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface, marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Parler business</div>
+          <div style={sectionHeaderStyle}>Parler business</div>
           {variant && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
               <div>
@@ -344,9 +350,9 @@ function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBa
             </div>
           )}
           {pitch.leadershipQuestion && (
-            <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 4, padding: "10px 14px" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#0369a1", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Question à poser au management</div>
-              <div style={{ fontSize: 13, color: "#0c4a6e", lineHeight: 1.5, fontStyle: "italic" }}>{pitch.leadershipQuestion}</div>
+            <div style={{ background: C.infoBg, border: `1px solid ${C.infoBorder}`, borderRadius: 4, padding: "10px 14px" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: C.infoText, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Question à poser au management</div>
+              <div style={{ fontSize: 13, color: C.infoTextDark, lineHeight: 1.5, fontStyle: "italic" }}>{pitch.leadershipQuestion}</div>
             </div>
           )}
         </div>
@@ -354,7 +360,7 @@ function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBa
 
       {/* Zone 3 — Adapter · Expérimenter (pleine largeur) */}
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface, marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 16 }}>Adapter · Expérimenter</div>
+        <div style={{ ...sectionHeaderStyle, marginBottom: 16 }}>Adapter · Expérimenter</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {plan.experiments.map((exp, i) => (
             <div key={i}>
