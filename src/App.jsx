@@ -3,6 +3,7 @@ import { CAUSES } from "./data/causes.js";
 import { ACTION_PLANS } from "./data/actionPlans.js";
 import { SYMPTOMS } from "./data/symptoms.js";
 import { SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES } from "./data/trees.js";
+import { STEPS } from "./constants.js";
 
 // --- RUNTIME VALIDATION ---------------------------------------------------
 
@@ -88,7 +89,7 @@ function palierMeta(p) {
 // --- COMPONENTS -----------------------------------------------------------
 
 export default function App() {
-  const [step, setStep] = useState("symptom");
+  const [step, setStep] = useState(STEPS.SYMPTOM);
   const [teamName, setTeamName] = useState(null);
   const [symptom, setSymptom] = useState(null);
   const [path, setPath] = useState([]);
@@ -106,26 +107,26 @@ export default function App() {
     setTeamName(name || null);
     setPath([]);
     setTerminalId(null);
-    setStep("diagnosis");
+    setStep(STEPS.DIAGNOSIS);
   }
 
   function answer(ans) {
     const newPath = [...path, { nodeId: currentNodeId, question: currentNode.question, answer: ans.label, next: ans.next }];
-    if (CAUSES[ans.next]) { setPath(newPath); setTerminalId(ans.next); setStep("result"); }
+    if (CAUSES[ans.next]) { setPath(newPath); setTerminalId(ans.next); setStep(STEPS.RESULT); }
     else setPath(newPath);
   }
 
   function backOne() {
-    if (step === "plan") { setStep("result"); return; }
-    if (path.length === 0) { setStep("symptom"); setSymptom(null); setTreeFocus(null); return; }
+    if (step === STEPS.PLAN) { setStep(STEPS.RESULT); return; }
+    if (path.length === 0) { setStep(STEPS.SYMPTOM); setSymptom(null); setTreeFocus(null); return; }
     setPath(path.slice(0, -1));
     setTerminalId(null);
-    if (step === "result") setStep("diagnosis");
+    if (step === STEPS.RESULT) setStep(STEPS.DIAGNOSIS);
   }
 
-  function showPlan() { setStep("plan"); }
+  function showPlan() { setStep(STEPS.PLAN); }
 
-  function restart() { setStep("symptom"); setTeamName(null); setSymptom(null); setPath([]); setTerminalId(null); setTreeFocus(null); }
+  function restart() { setStep(STEPS.SYMPTOM); setTeamName(null); setSymptom(null); setPath([]); setTerminalId(null); setTreeFocus(null); }
 
   const tree = symptom ? TREES[symptom.tree] : null;
 
@@ -133,14 +134,14 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: FONT, fontSize: 15, lineHeight: 1.5, padding: "32px 16px 64px" }}>
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <Header />
-        {step === "symptom" && <SymptomScreen onPick={pickSymptom} />}
-        {step === "diagnosis" && symptom && currentNode && (
+        {step === STEPS.SYMPTOM && <SymptomScreen onPick={pickSymptom} />}
+        {step === STEPS.DIAGNOSIS && symptom && currentNode && (
           <DiagnosisScreen symptom={symptom} tree={tree} currentNodeId={currentNodeId} currentNode={currentNode} path={path} onAnswer={answer} onBack={backOne} onRestart={restart} />
         )}
-        {step === "result" && terminalId && (
+        {step === STEPS.RESULT && terminalId && (
           <ResultScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} path={path} onBack={backOne} onRestart={restart} onPlan={showPlan} />
         )}
-        {step === "plan" && terminalId && ACTION_PLANS[terminalId] && (
+        {step === STEPS.PLAN && terminalId && ACTION_PLANS[terminalId] && (
           <PlanScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} teamName={teamName} path={path} onBack={backOne} onRestart={restart} />
         )}
       </div>
