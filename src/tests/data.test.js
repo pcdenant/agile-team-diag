@@ -51,13 +51,14 @@ describe("CAUSES", () => {
 
 // --- ACTION_PLANS ------------------------------------------------------------
 
-const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c2", "c2q", "c_cap", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable", "c4_dep", "c4q_dep", "c_defects"];
-const PLANS_WITH_VARIANT = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable", "c4_dep", "c4q_dep", "c_defects"];
+const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c2", "c2q", "c_cap", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable", "c4_dep", "c4q_dep", "c_defects", "c_urgency_misalign", "c_strategy_vague", "c_org"];
+const PLANS_WITH_VARIANT = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable", "c4_dep", "c4q_dep", "c_defects", "c_urgency_misalign", "c_strategy_vague", "c_org"];
 const PLANS_WITHOUT_VARIANT = ["c2", "c2q", "c_cap"];
+const PLANS_WITH_3_STEPS = ["c_org"];
 
 describe("ACTION_PLANS", () => {
-  it("contient exactement 18 plans implémentés", () => {
-    expect(Object.keys(ACTION_PLANS)).toHaveLength(18);
+  it("contient exactement 21 plans implémentés", () => {
+    expect(Object.keys(ACTION_PLANS)).toHaveLength(21);
     PLAN_IDS.forEach((id) => expect(ACTION_PLANS).toHaveProperty(id));
   });
 
@@ -70,9 +71,10 @@ describe("ACTION_PLANS", () => {
     expect(plan.businessPitch).toBeDefined();
   });
 
-  it.each(PLAN_IDS)("plan %s has exactly 2 experiments with required fields", (id) => {
+  it.each(PLAN_IDS)("plan %s has 2 or 3 experiments with required fields", (id) => {
     const { experiments } = ACTION_PLANS[id];
-    expect(experiments).toHaveLength(2);
+    const expectedLength = PLANS_WITH_3_STEPS.includes(id) ? 3 : 2;
+    expect(experiments).toHaveLength(expectedLength);
     experiments.forEach((exp, i) => {
       expect(exp.label, `exp[${i}].label`).toBeTruthy();
       expect(exp.timing, `exp[${i}].timing`).toBeTruthy();
@@ -82,10 +84,21 @@ describe("ACTION_PLANS", () => {
     });
   });
 
-  it.each(PLAN_IDS)("plan %s: étape 1 a un gate, étape 2 n'en a pas", (id) => {
-    const { experiments } = ACTION_PLANS[id];
+  it.each(PLAN_IDS.filter((id) => !PLANS_WITH_3_STEPS.includes(id)))(
+    "plan %s (2 étapes): étape 1 a un gate, étape 2 n'en a pas",
+    (id) => {
+      const { experiments } = ACTION_PLANS[id];
+      expect(experiments[0].gate).toBe(true);
+      expect(experiments[1].gate).toBe(false);
+    }
+  );
+
+  it("c_org (palier 3 — 3 étapes) : gates séquentiels corrects", () => {
+    const { experiments } = ACTION_PLANS.c_org;
+    expect(experiments).toHaveLength(3);
     expect(experiments[0].gate).toBe(true);
-    expect(experiments[1].gate).toBe(false);
+    expect(experiments[1].gate).toBe(true);
+    expect(experiments[2].gate).toBe(false);
   });
 
   it.each(PLAN_IDS)("plan %s a au moins 2 indicateurs avec metric/target/frequency", (id) => {
@@ -131,6 +144,30 @@ describe("ACTION_PLANS", () => {
     const itemsInd = gateIndicators.find((i) => i.metric.includes("Items en attente"));
     expect(itemsInd).toBeDefined();
     expect(itemsInd.target).toBe("≤ 2");
+  });
+
+  it("c_urgency_misalign: variants predictability et time_to_market distincts", () => {
+    const { focusVariant } = ACTION_PLANS.c_urgency_misalign.businessPitch;
+    expect(focusVariant.predictability.statusQuoCost).not.toBe(focusVariant.time_to_market.statusQuoCost);
+    expect(focusVariant.predictability.expectedResult).not.toBe(focusVariant.time_to_market.expectedResult);
+  });
+
+  it("c_strategy_vague: variants predictability et time_to_market distincts", () => {
+    const { focusVariant } = ACTION_PLANS.c_strategy_vague.businessPitch;
+    expect(focusVariant.predictability.statusQuoCost).not.toBe(focusVariant.time_to_market.statusQuoCost);
+    expect(focusVariant.predictability.expectedResult).not.toBe(focusVariant.time_to_market.expectedResult);
+  });
+
+  it("c_org: indicateur blocage a une cible ≤ 1 en simultané", () => {
+    const ind = ACTION_PLANS.c_org.indicators.find((i) => i.metric.includes("hors périmètre"));
+    expect(ind).toBeDefined();
+    expect(ind.target).toBe("≤ 1 en simultané");
+  });
+
+  it("c_org: indicateur SLA décision a une cible ≥ 80%", () => {
+    const ind = ACTION_PLANS.c_org.indicators.find((i) => i.metric.includes("7 jours"));
+    expect(ind).toBeDefined();
+    expect(ind.target).toBe("≥ 80%");
   });
 });
 

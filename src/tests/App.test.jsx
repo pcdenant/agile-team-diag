@@ -650,6 +650,360 @@ describe("PlanScreen — c_defects (focus time_to_market)", () => {
   });
 });
 
+// --- Cluster 7 : c_urgency_misalign, c_strategy_vague, c_org ----------------
+
+// Chemin commun vers p_strategy_check (predictability)
+// s1 → p_observe → p_other_type → p_new_urgent → p_strategy_check
+async function navigateTo_p_strategy_check(user) {
+  await user.click(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ }));
+  await user.click(screen.getByRole("button", { name: /D'autre travail s'est invité/ }));
+  await user.click(screen.getByRole("button", { name: /Du NEW work qui s'est invité/ }));
+  await user.click(screen.getByRole("button", { name: /Oui, objectivement plus urgent/ }));
+}
+
+// Chemin vers ttm_urgency_check (TTM)
+// s3 → ttm_urgent_slow → ttm_urgency_check
+async function navigateTo_ttm_urgency_check(user) {
+  await user.click(screen.getByRole("button", { name: /Beaucoup de travail attend en file/ }));
+  await user.click(screen.getByRole("button", { name: /Oui — même les urgences traînent en attente/ }));
+}
+
+// Chemin vers p_decision_owner_start (predictability)
+// s1 → p_observe → p_blocked_nature → p_could_start → p_know_capacity → p_anticipable → p_quantify_dep → p_decision_owner_start
+async function navigateTo_p_decision_owner_start(user) {
+  await user.click(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ }));
+  await user.click(screen.getByRole("button", { name: /Le travail planifié n'a pas avancé/ }));
+  await user.click(screen.getByRole("button", { name: /Extérieur — autre équipe ou dépendance externe/ }));
+  await user.click(screen.getByRole("button", { name: /Non — le démarrage lui-même est bloqué/ }));
+  await user.click(screen.getByRole("button", { name: /Oui, la source est identifiée et tracée/ }));
+  await user.click(screen.getByRole("button", { name: /Non — découverte en cours, imprévisible/ }));
+  await user.click(screen.getByRole("button", { name: /Oui, l'impact est chiffré/ }));
+}
+
+// Chemin vers ttm_q3b (TTM)
+// s3 → ttm_urgent_slow → ttm_urgency_check → ttm_blocked_nature → ttm_q1 → ttm_anticipable → ttm_q3 → ttm_q3b
+async function navigateTo_ttm_q3b(user) {
+  await navigateTo_ttm_urgency_check(user);
+  await user.click(screen.getByRole("button", { name: /Oui, l'urgence est claire — mais on ne peut pas démarrer/ }));
+  await user.click(screen.getByRole("button", { name: /Extérieur — dépendance externe/ }));
+  await user.click(screen.getByRole("button", { name: /Oui, la source est identifiée et tracée/ }));
+  await user.click(screen.getByRole("button", { name: /Non — découverte en cours, imprévisible/ }));
+  await user.click(screen.getByRole("button", { name: /Oui, l'impact est chiffré/ }));
+}
+
+// --- c_urgency_misalign -------------------------------------------------------
+
+describe("ResultScreen — c_urgency_misalign (Predictability)", () => {
+  it("affiche la cause c_urgency_misalign et le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_strategy_check(user);
+    await user.click(screen.getByRole("button", { name: /la stratégie est claire — mais les parties prenantes ne s'accordent pas/ }));
+
+    expect(screen.getByText(/Désaccord sur l'urgence — stratégie claire, arbitrages locaux divergents/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le badge Palier 1", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_strategy_check(user);
+    await user.click(screen.getByRole("button", { name: /la stratégie est claire — mais les parties prenantes ne s'accordent pas/ }));
+
+    expect(screen.getByText(/Palier 1/)).toBeInTheDocument();
+  });
+});
+
+describe("ResultScreen — c_urgency_misalign (TTM)", () => {
+  it("affiche la cause c_urgency_misalign via TTM", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_ttm_urgency_check(user);
+    await user.click(screen.getByRole("button", { name: /Pas vraiment — il y a désaccord sur ce qui est urgent/ }));
+
+    expect(screen.getByText(/Désaccord sur l'urgence — stratégie claire, arbitrages locaux divergents/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c_urgency_misalign (focus predictability)", () => {
+  async function goToPlanScreen_c_urgency_misalign_pred(user) {
+    await navigateTo_p_strategy_check(user);
+    await user.click(screen.getByRole("button", { name: /la stratégie est claire — mais les parties prenantes ne s'accordent pas/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les 4 zones du plan", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_urgency_misalign_pred(user);
+
+    expect(screen.getByText("Impact · Objectif")).toBeInTheDocument();
+    expect(screen.getByText("Inspecter · Mesurer")).toBeInTheDocument();
+    expect(screen.getByText("Adapter · Expérimenter")).toBeInTheDocument();
+    expect(screen.getByText("Parler business")).toBeInTheDocument();
+  });
+
+  it("affiche la formule coût c_urgency_misalign", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_urgency_misalign_pred(user);
+
+    expect(screen.getByText(/items interrompus en sprint/)).toBeInTheDocument();
+  });
+
+  it("affiche les 2 étapes séquentielles avec le gate", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_urgency_misalign_pred(user);
+
+    expect(screen.getByText(/Étape 1 — Cartographier le désaccord/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Créer une échelle d'urgence commune/)).toBeInTheDocument();
+    expect(screen.getByText(/Lancer l'étape suivante uniquement/)).toBeInTheDocument();
+  });
+
+  it("affiche les indicateurs avec leurs cibles", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_urgency_misalign_pred(user);
+
+    expect(screen.getByText(/Items interrompus en cours de sprint/)).toBeInTheDocument();
+    expect(screen.getByText(/Taux de complétion du commitment sprint/)).toBeInTheDocument();
+  });
+
+  it("affiche la variante predictability dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_urgency_misalign_pred(user);
+
+    expect(screen.getByText(/interruptions arbitraires et stabilise la prévisibilité/)).toBeInTheDocument();
+  });
+
+  it("affiche la leadershipQuestion de c_urgency_misalign", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_urgency_misalign_pred(user);
+
+    expect(screen.getByText(/interruptions ont eu lieu sans décision explicite de votre part/)).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c_urgency_misalign (focus time_to_market)", () => {
+  async function goToPlanScreen_c_urgency_misalign_ttm(user) {
+    await navigateTo_ttm_urgency_check(user);
+    await user.click(screen.getByRole("button", { name: /Pas vraiment — il y a désaccord sur ce qui est urgent/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche la variante time_to_market dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_urgency_misalign_ttm(user);
+
+    expect(screen.getByText(/niveau d'urgence partagé permet au travail prioritaire/)).toBeInTheDocument();
+  });
+});
+
+// --- c_strategy_vague ---------------------------------------------------------
+
+describe("ResultScreen — c_strategy_vague (Predictability)", () => {
+  it("affiche la cause c_strategy_vague et le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_strategy_check(user);
+    await user.click(screen.getByRole("button", { name: /la stratégie elle-même est trop vague pour arbitrer/ }));
+
+    expect(screen.getByText(/Stratégie trop vague — pas d'arbitrage local possible/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le badge Palier 1", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_strategy_check(user);
+    await user.click(screen.getByRole("button", { name: /la stratégie elle-même est trop vague pour arbitrer/ }));
+
+    expect(screen.getByText(/Palier 1/)).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c_strategy_vague (focus predictability)", () => {
+  async function goToPlanScreen_c_strategy_vague(user) {
+    await navigateTo_p_strategy_check(user);
+    await user.click(screen.getByRole("button", { name: /la stratégie elle-même est trop vague pour arbitrer/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les 4 zones du plan", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_strategy_vague(user);
+
+    expect(screen.getByText("Impact · Objectif")).toBeInTheDocument();
+    expect(screen.getByText("Inspecter · Mesurer")).toBeInTheDocument();
+    expect(screen.getByText("Adapter · Expérimenter")).toBeInTheDocument();
+    expect(screen.getByText("Parler business")).toBeInTheDocument();
+  });
+
+  it("affiche la formule coût c_strategy_vague", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_strategy_vague(user);
+
+    expect(screen.getByText(/décisions mal alignées/)).toBeInTheDocument();
+  });
+
+  it("affiche les 2 étapes séquentielles avec le gate", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_strategy_vague(user);
+
+    expect(screen.getByText(/Étape 1 — Rendre le désalignement visible/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Obtenir 3 critères d'arbitrage concrets/)).toBeInTheDocument();
+    expect(screen.getByText(/Lancer l'étape suivante uniquement/)).toBeInTheDocument();
+  });
+
+  it("affiche les indicateurs avec leurs cibles", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_strategy_vague(user);
+
+    expect(screen.getByText(/Escalades de décision de priorisation/)).toBeInTheDocument();
+    expect(screen.getByText(/Items modifiés ou abandonnés après livraison/)).toBeInTheDocument();
+  });
+
+  it("affiche la variante predictability dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_strategy_vague(user);
+
+    expect(screen.getByText(/Trois critères concrets réduisent les escalades/)).toBeInTheDocument();
+  });
+
+  it("affiche la leadershipQuestion de c_strategy_vague", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_strategy_vague(user);
+
+    expect(screen.getByText(/quelle est la bonne réponse, et est-ce qu'ils peuvent prendre cette décision sans vous appeler/)).toBeInTheDocument();
+  });
+});
+
+// --- c_org --------------------------------------------------------------------
+
+describe("ResultScreen — c_org (Predictability)", () => {
+  it("affiche la cause c_org et le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_decision_owner_start(user);
+    await user.click(screen.getByRole("button", { name: /La décision appartient à une strate au-dessus et elle n'est pas prise/ }));
+
+    expect(screen.getByText(/Blocage organisationnel — données complètes, décision manquante/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le badge Palier 3", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_p_decision_owner_start(user);
+    await user.click(screen.getByRole("button", { name: /La décision appartient à une strate au-dessus et elle n'est pas prise/ }));
+
+    expect(screen.getByText(/Palier 3/)).toBeInTheDocument();
+  });
+});
+
+describe("ResultScreen — c_org (TTM)", () => {
+  it("affiche la cause c_org via TTM", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await navigateTo_ttm_q3b(user);
+    await user.click(screen.getByRole("button", { name: /La décision appartient à une strate au-dessus et elle n'est pas prise/ }));
+
+    expect(screen.getByText(/Blocage organisationnel — données complètes, décision manquante/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c_org (focus predictability)", () => {
+  async function goToPlanScreen_c_org_pred(user) {
+    await navigateTo_p_decision_owner_start(user);
+    await user.click(screen.getByRole("button", { name: /La décision appartient à une strate au-dessus et elle n'est pas prise/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche les 4 zones du plan", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_org_pred(user);
+
+    expect(screen.getByText("Impact · Objectif")).toBeInTheDocument();
+    expect(screen.getByText("Inspecter · Mesurer")).toBeInTheDocument();
+    expect(screen.getByText("Adapter · Expérimenter")).toBeInTheDocument();
+    expect(screen.getByText("Parler business")).toBeInTheDocument();
+  });
+
+  it("affiche la formule coût c_org", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_org_pred(user);
+
+    expect(screen.getByText(/items bloqués en attente de décision/)).toBeInTheDocument();
+  });
+
+  it("affiche les 3 étapes séquentielles avec les gates", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_org_pred(user);
+
+    expect(screen.getByText(/Étape 1 — Poser le coût sur la table/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Présenter le choix, pas le problème/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 3 — Fixer une date de décision/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Lancer l'étape suivante uniquement/)).toHaveLength(2);
+  });
+
+  it("affiche les 3 indicateurs avec leurs cibles", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_org_pred(user);
+
+    expect(screen.getByText(/Items bloqués en attente de décision hors périmètre/)).toBeInTheDocument();
+    expect(screen.getByText(/Durée moyenne de blocage palier 3/)).toBeInTheDocument();
+    expect(screen.getByText(/Décisions obtenues dans les 7 jours/)).toBeInTheDocument();
+  });
+
+  it("affiche la variante predictability dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_org_pred(user);
+
+    expect(screen.getByText(/disponibilité décisionnelle du management/)).toBeInTheDocument();
+  });
+
+  it("affiche la leadershipQuestion de c_org", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_org_pred(user);
+
+    expect(screen.getByText(/Est-ce un coût que vous assumez consciemment/)).toBeInTheDocument();
+  });
+});
+
+describe("PlanScreen — c_org (focus time_to_market)", () => {
+  async function goToPlanScreen_c_org_ttm(user) {
+    await navigateTo_ttm_q3b(user);
+    await user.click(screen.getByRole("button", { name: /La décision appartient à une strate au-dessus et elle n'est pas prise/ }));
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+  }
+
+  it("affiche la variante time_to_market dans le businessPitch", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToPlanScreen_c_org_ttm(user);
+
+    expect(screen.getByText(/SLA décisionnel clair réduit ce temps d'attente/)).toBeInTheDocument();
+  });
+});
+
 // --- teamName ----------------------------------------------------------------
 
 describe("teamName", () => {
