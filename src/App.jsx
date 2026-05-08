@@ -813,6 +813,131 @@ const ACTION_PLANS = {
       },
     },
   },
+
+  c_urgency_misalign: {
+    cost: "[items interrompus en sprint] × [jours de replanification] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter combien de fois dans les 3 derniers sprints un item planifié a été abandonné en cours de sprint au profit d'un autre jugé plus urgent par quelqu'un d'autre.",
+    experiments: [
+      {
+        label: "Étape 1 — Cartographier le désaccord",
+        timing: "cette semaine",
+        description: "30 minutes en rétro avec le PO et un représentant du leadership. Question unique : \"Sur les [X] derniers sprints, quel travail a sauté la file — et qui a décidé que c'était prioritaire ?\" Un post-it par interruption. Pour chaque cas : qui a décidé, selon quelle information, au nom de quoi.",
+        criterion: "Au moins 3 cas documentés avec une décision d'urgence clairement attribuée à une personne ou une instance.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Créer une échelle d'urgence commune",
+        timing: "sprint suivant",
+        description: "Avec le PO et un représentant du leadership : définir 3 niveaux d'urgence maximum, avec un exemple concret pour chacun. Chaque niveau répond à \"si ça arrive, l'équipe fait quoi ?\" Afficher l'échelle là où l'équipe travaille. Pendant le sprint suivant, chaque item qui interrompt le plan est tagué avec le niveau correspondant avant d'entrer.",
+        criterion: "Chaque interruption du sprint suivant est justifiée par un niveau d'urgence connu de l'équipe avant le début du sprint.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items interrompus en cours de sprint", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Taux de complétion du commitment sprint", target: "Tendance haussière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "PO + SM — 10 min en fin de sprint, intégré à la rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Sur les [X] derniers sprints, combien d'interruptions ont eu lieu sans décision explicite de votre part — et combien ça a coûté ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque interruption non justifiée coûte à l'équipe au minimum [X] jours de replanification par sprint. Le sprint finit moins rempli que prévu, et personne ne comprend pourquoi le commitment n'est pas tenu.",
+          expectedResult: "Une échelle d'urgence commune réduit les interruptions arbitraires et stabilise la prévisibilité.",
+        },
+        time_to_market: {
+          statusQuoCost: "Le travail prioritaire ne sort pas plus vite parce qu'il entre en compétition avec d'autres travaux \"urgents\" décidés localement. Sans critère commun, tout est urgent — donc rien ne passe vraiment avant le reste.",
+          expectedResult: "Un niveau d'urgence partagé permet au travail prioritaire d'avancer sans attendre un arbitrage.",
+        },
+      },
+    },
+  },
+
+  c_strategy_vague: {
+    cost: "[décisions mal alignées] × [jours de rework ou repriorisation] × [coût journalier équipe]",
+    costHint: "Si les données manquent : compter combien d'items livrés ce trimestre ont été modifiés ou abandonnés après livraison parce qu'ils ne correspondaient pas à ce que le business attendait vraiment.",
+    experiments: [
+      {
+        label: "Étape 1 — Rendre le désalignement visible",
+        timing: "cette semaine",
+        description: "En rétro ou en session dédiée de 30 minutes : demander à chaque membre de l'équipe d'écrire en une phrase \"ce que l'équipe est censée prioriser en ce moment\". Comparer les réponses. Si elles divergent, le problème est structurel, pas une question d'écoute.",
+        criterion: "Les réponses divergent sur au moins un point stratégique clé. Le résultat est documenté et présenté au leadership comme fait, pas comme opinion.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Obtenir 3 critères d'arbitrage concrets",
+        timing: "sprint suivant",
+        description: "Avec le leadership : demander 3 critères qui permettent à l'équipe de trancher localement entre deux options sans escalade. Pas de valeurs génériques — des critères qui répondent à \"si on doit choisir entre X et Y, qu'est-ce qui prime ?\" Afficher ces critères là où l'équipe travaille.",
+        criterion: "Sur le sprint suivant, au moins une décision de priorisation est prise par l'équipe sans escalade, en référençant ces critères.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Escalades de décision de priorisation", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Items modifiés ou abandonnés après livraison", target: "Tendance baissière", frequency: "Chaque sprint" },
+    ],
+    ownerNote: "PO + SM — 10 min en fin de sprint, intégré à la Sprint Review ou la rétro.",
+    businessPitch: {
+      leadershipQuestion: "\"Si l'équipe doit choisir entre livrer [fonctionnalité A] ou [fonctionnalité B] cette semaine — quelle est la bonne réponse, et est-ce qu'ils peuvent prendre cette décision sans vous appeler ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Sans critères d'arbitrage clairs, chaque décision de priorisation remonte. L'équipe attend. Le sprint perd du rythme. Et le commitment tenu dépend de la disponibilité du management, pas de la capacité de l'équipe.",
+          expectedResult: "Trois critères concrets réduisent les escalades et stabilisent la vitesse de décision.",
+        },
+        time_to_market: {
+          statusQuoCost: "Une stratégie trop vague rallonge le cycle time sans que personne ne s'en rende compte : le travail attend des arbitrages qui n'arrivent pas. Chaque jour d'attente décisionnelle est un jour de plus dans le lead time.",
+          expectedResult: "Des critères explicites permettent à l'équipe d'avancer sans suspendre le flux.",
+        },
+      },
+    },
+  },
+
+  c_org: {
+    cost: "[items bloqués en attente de décision] × [jours de blocage moyen] × [coût journalier équipe]",
+    costHint: "Si les données manquent : comptabiliser les items en statut \"bloqué\" depuis plus de 5 jours dans les 3 derniers sprints. Chaque item en attente d'une décision hors du périmètre de l'équipe compte.",
+    experiments: [
+      {
+        label: "Étape 1 — Poser le coût sur la table",
+        timing: "cette semaine",
+        description: "Préparer un résumé d'une page : [X] items bloqués en attente d'une décision, [Y] jours d'attente cumulés, [Z] jours d'équipe mobilisés sans livraison. Formulé comme un problème business, pas comme une plainte d'équipe. Présenter au PO. Demander l'accès au bon décideur.",
+        criterion: "Un rendez-vous avec le décideur est posé dans les 5 jours ouvrés suivants.",
+        gate: true,
+      },
+      {
+        label: "Étape 2 — Présenter le choix, pas le problème",
+        timing: "dans la semaine suivant l'étape 1",
+        description: "En réunion avec le décideur : présenter les données, puis deux ou trois options avec leur coût respectif, y compris le coût de ne rien décider. Ne pas demander une solution. Demander un choix. Attendre la réponse sans combler le silence.",
+        criterion: "Le décideur exprime une position explicite : \"on fait X\", \"on ne fait pas Y\", ou \"j'ai besoin de [information précise] avant de décider\".",
+        gate: true,
+      },
+      {
+        label: "Étape 3 — Fixer une date de décision",
+        timing: "sprint suivant",
+        description: "Si la décision est encore suspendue : proposer une date courte, moins de 7 jours, pour une réponse finale. Au-delà, l'équipe applique l'option par défaut — à définir avec le PO maintenant, avant la réunion. L'objectif est de sortir de l'attente passive.",
+        criterion: "La décision est prise avant la date fixée, ou l'option par défaut est activée et documentée.",
+        gate: false,
+      },
+    ],
+    indicators: [
+      { metric: "Items bloqués en attente de décision hors périmètre", target: "≤ 1 en simultané", frequency: "Chaque sprint" },
+      { metric: "Durée moyenne de blocage palier 3", target: "Tendance baissière", frequency: "Chaque sprint" },
+      { metric: "Décisions obtenues dans les 7 jours suivant l'escalade", target: "≥ 80%", frequency: "Trimestriel" },
+    ],
+    ownerNote: "SM + PO — 10 min en Sprint Review, présenté comme indicateur de santé système au leadership.",
+    businessPitch: {
+      leadershipQuestion: "\"Ces [X] items sont bloqués depuis [Y] jours en attente d'une décision. Chaque semaine qui passe coûte [Z]. Est-ce un coût que vous assumez consciemment ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque décision non prise est un item qui ne sort pas. Le sprint est tenu ou non selon la disponibilité décisionnelle du management, pas la capacité de l'équipe.",
+          expectedResult: "Rendre les décisions attendues visibles et les traiter comme des engagements réduit directement le nombre d'items qui ne finissent pas.",
+        },
+        time_to_market: {
+          statusQuoCost: "Un blocage palier 3 est le lead time le plus coûteux : l'item est fait, les données sont là, et le travail attend quand même. Chaque jour ici est du temps client perdu sur de la valeur déjà produite.",
+          expectedResult: "Un SLA décisionnel clair réduit ce temps d'attente sans toucher à la capacité de l'équipe.",
+        },
+      },
+    },
+  },
 };
 
 // --- DATA: SYMPTOMS (4) ---------------------------------------------------
