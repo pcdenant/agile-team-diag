@@ -148,10 +148,10 @@ export default function App() {
         {step === STEPS.DIAGNOSIS && symptom && currentNode && (
           <DiagnosisScreen symptom={symptom} tree={tree} currentNodeId={currentNodeId} currentNode={currentNode} path={path} onAnswer={answer} onBack={backOne} onRestart={restart} />
         )}
-        {step === STEPS.RESULT && terminalId && (
+        {step === STEPS.RESULT && terminalId && CAUSES[terminalId] && (
           <ResultScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} path={path} onBack={backOne} onRestart={restart} onPlan={showPlan} />
         )}
-        {step === STEPS.PLAN && terminalId && ACTION_PLANS[terminalId] && (
+        {step === STEPS.PLAN && terminalId && CAUSES[terminalId] && ACTION_PLANS[terminalId] && (
           <PlanScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} teamName={teamName} path={path} onBack={backOne} onRestart={restart} />
         )}
       </div>
