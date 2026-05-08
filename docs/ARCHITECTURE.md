@@ -2,27 +2,53 @@
 
 ## Stack
 
-- **Runtime** : React (artifact Claude / standalone SPA)
-- **Styling** : Inline styles via shared `COLORS`, `TYPE`, `FONT` tokens
+- **Runtime** : React 18 + Vite (SPA, client-side uniquement)
+- **Styling** : Inline styles via shared `C`, `FONT`, `MONO` tokens (définis dans `App.jsx`)
 - **State** : `useState` — pas de store externe
 - **Responsive** : breakpoint 768px
 - **Validation** : `validateTrees()` au chargement du module (console, non-bloquant)
+- **Tests** : Vitest + React Testing Library
 
-## Structure du fichier (1 fichier, 6 sections)
+## Structure des fichiers
 
 ```
-┌─ STYLE SYSTEM ─────────────── COLORS, FONT, TYPE
-├─ DATA LAYER ───────────────── CAUSES, SYMPTOMS
-│   ├─ SHARED_NODES             ← branche finish + branche interne-start
-│   ├─ PREDICTABILITY_NODES
-│   ├─ TTM_NODES
-│   ├─ TREES                    ← registry des deux arbres
-│   └─ validateTrees()          ← validation runtime au chargement
+src/
+├── App.jsx              # UI, navigation, validation, helpers, export des tokens
+├── main.jsx             # Entrée React
+├── constants.js         # STEPS, TREE_IDS (constantes nommées)
+├── index.css            # Reset minimal
+├── data/
+│   ├── causes.js        # CAUSES — 21 causes racine + exit_observe
+│   ├── actionPlans.js   # ACTION_PLANS — plans d'action (21/21)
+│   ├── symptoms.js      # SYMPTOMS — 4 symptômes
+│   └── trees.js         # SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES
+├── components/
+│   ├── PlanHeader.jsx       # En-tête du plan (titre + nom équipe)
+│   ├── PlanMetrics.jsx      # Quadrant Impact/Objectif + Inspecter/Mesurer
+│   ├── PlanBusinessPitch.jsx # Section pitch business
+│   └── PlanExperiments.jsx  # Section actions + expérimentations 48h
+└── tests/
+    ├── App.test.jsx         # Tests d'intégration (navigation complète)
+    ├── data.test.js         # Validation des structures de données
+    ├── helpers.test.js      # Tests des fonctions utilitaires
+    └── setup.js             # Configuration Vitest globale
+```
+
+### Responsabilités de `App.jsx`
+
+`App.jsx` reste le point d'entrée principal mais ne contient plus les données statiques.
+
+```
+┌─ RUNTIME VALIDATION ───────── validateTrees()
 ├─ LOOKUP ───────────────────── lookupNode(treeId, nodeId)
+├─ STYLE TOKENS ─────────────── C, FONT, MONO, sectionHeaderStyle
 ├─ HELPERS ──────────────────── severityLabel, severityColor, palierMeta
 ├─ STEP COMPONENTS ──────────── SymptomScreen, DiagnosisScreen, ResultScreen, PlanScreen
+├─ SHARED UI ────────────────── Header, ContextStrip, SectionTitle, PathTrail, Badge
 └─ MAIN APP ─────────────────── App (state + navigation)
 ```
+
+Les tokens (`C`, `MONO`, `sectionHeaderStyle`, `Badge`, `SectionTitle`) sont exportés depuis `App.jsx` et consommés par les sous-composants de `src/components/`.
 
 ## Concepts clés
 
@@ -161,20 +187,18 @@ Champs supprimés vs V1 : `id` (redondant avec la clé de l'objet), `flagDepende
 }
 ```
 
-### Action Plan (schéma cible — à implémenter)
+### Action Plan
 
 ```typescript
 {
-  collect: {
-    what: string,
-    report: string,
-    cost: string,
-    check: string,
-    protocol?: BlockageMVProtocol,
-  },
-  actions: ActionItem[],
-  experiments: ExperimentItem[],
-  indicators: IndicatorItem[],
+  cost: string,           // coût du problème non résolu (quadrant Impact)
+  costHint?: string,      // précision contextuelle sur le coût
+  indicators: {
+    metric: string,
+    target: string,
+    frequency: string,
+  }[],
+  ownerNote: string,      // note sur le propriétaire de la décision
   businessPitch: {
     statusQuoCost: string,
     expectedResult: string,
@@ -183,9 +207,19 @@ Champs supprimés vs V1 : `id` (redondant avec la clé de l'objet), `flagDepende
       predictability: { statusQuoCost: string, expectedResult: string },
       time_to_market: { statusQuoCost: string, expectedResult: string },
     }
-  }
+  },
+  experiments: {
+    action: string,       // action à mener
+    why: string,          // justification
+    whyNow: string,       // pourquoi maintenant
+    experiment: string,   // expérimentation 48h associée
+    observe: string,      // ce qu'on observe
+    confirm: string,      // critère de confirmation
+  }[]
 }
 ```
+
+21 plans d'action implémentés — un par cause racine.
 
 ## Étendre les données
 
@@ -219,15 +253,20 @@ Procédure :
 
 | Décision | Raison |
 |----------|--------|
-| Fichier unique | Contrainte artifact Claude — migration vers multi-fichier triviale |
-| Inline styles | Pas de build step / CSS modules en artifact |
-| SHARED_NODES | Évite la duplication de la branche finish (identique dans les deux arbres). lookupNode() résout la priorité. |
-| validateTrees() au module level | S'exécute avant tout rendu React, sans useEffect. Les données sont statiques — une seule passe au chargement suffit. |
-| treeFocus dans le state (pas dérivé de symptom) | treeFocus est un champ de state explicite, persisté indépendamment de symptom, pour être passé aux composants DiagnosisScreen, ResultScreen et PlanScreen sans re-dériver. |
-| Schéma Node uniforme {label, next}[] | Supprime la couche d'abstraction type/answers inutile — chaque réponse est une paire label+next, quel que soit le "type" de question. |
-| Causes contextuelles (Option A) | Le label de la cause est lu directement par le SM sur l'écran résultat — il doit être précis sans que le SM relise le chemin. Un label générique sans contexte (dépendance ? interne ?) est inutilisable. |
-| "Pourquoi pas encore résolu ?" comme question | Plus engageant qu'un menu de classification. Force le SM à articuler la raison réelle avant de voir la cause — produit une réponse plus honnête sur c_org vs c2q/c4q_dep. |
-| `c_defects` comme cause palier 1 | Pas une sortie hors scope — c'est une cause réelle avec un plan de collecte immédiat. La qualité impacte le flux. Renommé depuis `exit_quality` (rev. 7) — le préfixe `exit_` était un vestige de l'époque où cette cause était hors scope. |
-| Pas de profil utilisateur | Le rôle ne pilotait que la formulation des symptômes. Supprimé en rev. 7 — libellé unique par symptôme. |
-| Pas de sélection de catégorie | La catégorie était une étape UI sans valeur diagnostique propre. Les symptômes routent directement vers l'arbre. Supprimé en rev. 7. |
-| teamName dans le state (pas persisté) | Champ optionnel affiché dans le parcours. La persistence entre sessions est reportée à V4. |
+| Données dans `src/data/` | Séparation authoring/UI sans ajouter de couche d'abstraction. Chaque fichier a une seule responsabilité. |
+| `PlanScreen` découpé en 4 composants | Chaque quadrant du plan est indépendant. Les extraire réduit la taille de App.jsx et facilite les tests ciblés. |
+| Tokens exportés depuis App.jsx | Les sous-composants consomment les tokens via import nommé — pas de props drilling ni de Context pour des constantes de style. |
+| `src/constants.js` pour STEPS/TREE_IDS | Élimine les magic strings dispersés dans App.jsx. Un seul point de vérité pour les valeurs d'enum utilisées en navigation. |
+| Inline styles (pas de CSS framework) | Aucun build step supplémentaire, tokens centralisés, cohérence garantie par typage JS. |
+| SHARED_NODES | Évite la duplication de la branche finish (identique dans les deux arbres). `lookupNode()` résout la priorité. |
+| `validateTrees()` au module level | S'exécute avant tout rendu React, sans useEffect. Les données sont statiques — une seule passe au chargement suffit. |
+| `treeFocus` dans le state (pas dérivé de symptom) | Champ explicite persisté indépendamment de `symptom`, passé aux composants sans re-dériver à chaque render. |
+| Schéma Node uniforme `{label, next}[]` | Supprime la couche d'abstraction `type/answers` inutile — chaque réponse est une paire label+next. |
+| Causes contextuelles (Option A) | Le label doit être précis sans que le SM relise le chemin. Un label générique est inutilisable sur l'écran résultat. |
+| "Pourquoi pas encore résolu ?" comme question | Force le SM à articuler la raison réelle avant de voir la cause — produit une réponse plus honnête sur c_org vs c2q/c4q_dep. |
+| `c_defects` comme cause palier 1 | Pas une sortie hors scope — cause réelle avec plan de collecte immédiat. Renommé depuis `exit_quality` (rev. 7). |
+| Pas de profil utilisateur | Le rôle ne pilotait que la formulation des symptômes — supprimé en rev. 7, libellé unique par symptôme. |
+| Pas de sélection de catégorie | Étape UI sans valeur diagnostique propre. Les symptômes routent directement vers leur arbre. |
+| `teamName` dans le state (pas persisté) | Champ optionnel affiché dans le parcours. La persistence entre sessions est reportée à V4. |
+
+*Updated: 2026-05-08*
