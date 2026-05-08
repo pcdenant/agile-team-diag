@@ -1042,3 +1042,302 @@ describe("teamName", () => {
     expect(screen.getByPlaceholderText(/Team Phoenix/i)).toHaveValue("");
   });
 });
+
+// ============================================================
+// Cluster — causes précédemment non naviguées (PR 2)
+// ============================================================
+
+// Helpers partagés
+
+async function navigateTo_s4_finish_drags(user) {
+  await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+  await user.click(screen.getByRole("button", { name: /Qui traîne — pas de bloqueur dur/ }));
+}
+
+async function navigateTo_s4_finish_blocked_external(user) {
+  await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+  await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+  await user.click(screen.getByRole("button", { name: /Extérieur — autre équipe, dépendance ou expert inaccessible/ }));
+}
+
+async function navigateTo_s1_external_start_blocked(user) {
+  await user.click(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ }));
+  await user.click(screen.getByRole("button", { name: /Le travail planifié n'a pas avancé/ }));
+  await user.click(screen.getByRole("button", { name: /Extérieur — autre équipe ou dépendance externe/ }));
+  await user.click(screen.getByRole("button", { name: /Non — le démarrage lui-même est bloqué/ }));
+}
+
+// --- c_oversize -----------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c_oversize via s4", () => {
+  async function goToResult(user) {
+    await navigateTo_s4_finish_drags(user);
+    await user.click(screen.getByRole("button", { name: /L'item est trop gros/ }));
+  }
+
+  it("affiche la cause c_oversize", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Item trop gros — ne peut pas finir dans le cycle/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c_oversize", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Fixer une règle de taille/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Intégrer le check taille dans la DoR/)).toBeInTheDocument();
+  });
+});
+
+// --- c_scope_creep --------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c_scope_creep via s4", () => {
+  async function goToResult(user) {
+    await navigateTo_s4_finish_drags(user);
+    await user.click(screen.getByRole("button", { name: /Le scope s'est rajouté en cours/ }));
+  }
+
+  it("affiche la cause c_scope_creep", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Scope créep en cours d'exécution/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c_scope_creep", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Photographier le scope au démarrage/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Tout ajout devient un ticket/)).toBeInTheDocument();
+  });
+});
+
+// --- c_wip via finish_drags -----------------------------------------------
+
+describe("ResultScreen + PlanScreen — c_wip via s4 finish_drags", () => {
+  async function goToResult(user) {
+    await navigateTo_s4_finish_drags(user);
+    await user.click(screen.getByRole("button", { name: /L'équipe a pris d'autres items à la place \(multitâche\)/ }));
+  }
+
+  it("affiche la cause c_wip (via finish_drags)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/WIP excessif — capacité fragmentée par multitâche/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c_wip", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Poser une limite WIP visible/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Finir avant de commencer/)).toBeInTheDocument();
+  });
+});
+
+// --- c_skill_unavailable --------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c_skill_unavailable via s4", () => {
+  async function goToResult(user) {
+    await navigateTo_s4_finish_blocked_external(user);
+    await user.click(screen.getByRole("button", { name: /Un expert ou skill indisponible/ }));
+  }
+
+  it("affiche la cause c_skill_unavailable", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Expert ou skill indisponible — goulot de dépendance interne/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c_skill_unavailable", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Nommer le goulot/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Élargir le goulot/)).toBeInTheDocument();
+  });
+});
+
+// --- c3_ext ---------------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c3_ext via s4", () => {
+  async function goToResult(user) {
+    await navigateTo_s4_finish_blocked_external(user);
+    await user.click(screen.getByRole("button", { name: /Je ne sais pas quelle dépendance bloque exactement/ }));
+  }
+
+  it("affiche la cause c3_ext", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Blocage en exécution — dépendance externe inconnue/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c3_ext", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Nommer le bloqueur/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Signaler et escalader/)).toBeInTheDocument();
+  });
+});
+
+// --- c3_int ---------------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c3_int via s4", () => {
+  async function goToResult(user) {
+    await navigateTo_s4_finish_blocked_internal(user);
+    await user.click(screen.getByRole("button", { name: /Raisons inconnues — on n'a pas trac/ }));
+  }
+
+  it("affiche la cause c3_int", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Blocage en exécution — cause interne inconnue/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c3_int", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Rendre le blocage visible/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Identifier le pattern/)).toBeInTheDocument();
+  });
+});
+
+// --- c1_ext ---------------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c1_ext via s1 (Predictability)", () => {
+  async function goToResult(user) {
+    await navigateTo_s1_external_start_blocked(user);
+    await user.click(screen.getByRole("button", { name: /Non, la source n'est pas encore identifiée/ }));
+  }
+
+  it("affiche la cause c1_ext", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Blocage démarrage — dépendance externe inconnue/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c1_ext", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Tagger chaque blocage au démarrage/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Top 5 des sources de blocage au démarrage/)).toBeInTheDocument();
+  });
+});
+
+// --- c1_int ---------------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c1_int via s1 (Predictability)", () => {
+  async function goToResult(user) {
+    await navigateTo_s1_internal(user);
+    await user.click(screen.getByRole("button", { name: /Raisons inconnues — on n'a pas tracé pourquoi/ }));
+  }
+
+  it("affiche la cause c1_int", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Blocage démarrage — cause interne inconnue/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c1_int", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Nommer le blocage au moment où il se produit/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Rétro courte sur les non-démarrages/)).toBeInTheDocument();
+  });
+});
+
+// --- c_dor ----------------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c_dor", () => {
+  async function goToResult_via_s1(user) {
+    await navigateTo_s1_internal(user);
+    await user.click(screen.getByRole("button", { name: /Les items ne sont pas prêts/ }));
+  }
+
+  async function goToResult_via_s3(user) {
+    await user.click(screen.getByRole("button", { name: /Beaucoup de travail attend en file/ }));
+    await user.click(screen.getByRole("button", { name: /Non — les urgences démarrent vite/ }));
+    await user.click(screen.getByRole("button", { name: /Oui — quand on tire l'item, il n'est pas pull-ready/ }));
+  }
+
+  it("affiche la cause c_dor via s1 (Predictability)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult_via_s1(user);
+    expect(screen.getByText(/Items non prêts au démarrage — DoR failure/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche la cause c_dor via s3 (TTM)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult_via_s3(user);
+    expect(screen.getByText(/Items non prêts au démarrage — DoR failure/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c_dor", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult_via_s1(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Ready check au Sprint Planning/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Fixer 3 critères minimaux de "prêt"/)).toBeInTheDocument();
+  });
+});
+
+// --- c_anticipation -------------------------------------------------------
+
+describe("ResultScreen + PlanScreen — c_anticipation via s4", () => {
+  async function goToResult(user) {
+    await navigateTo_s4_finish_blocked_external(user);
+    await user.click(screen.getByRole("button", { name: /Une dépendance équipe ou un input externe manquant/ }));
+    await user.click(screen.getByRole("button", { name: /Oui — elle était connue mais mal planifiée/ }));
+  }
+
+  it("affiche la cause c_anticipation", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    expect(screen.getByText(/Dépendance prévisible mal anticipée/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
+  });
+
+  it("affiche le plan c_anticipation", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToResult(user);
+    await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
+    expect(screen.getByText(/Étape 1 — Poser la question en refinement/)).toBeInTheDocument();
+    expect(screen.getByText(/Étape 2 — Tenir un tableau de dépendances anticipées/)).toBeInTheDocument();
+  });
+});
