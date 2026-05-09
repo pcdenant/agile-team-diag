@@ -245,7 +245,7 @@ describe("Navigation depuis PlanScreen", () => {
     render(<App />);
     await goToPlanScreen(user);
 
-    await user.click(screen.getByRole("button", { name: /↻ Recommencer/ }));
+    await user.click(screen.getByRole("button", { name: /Recommencer depuis le début/ }));
 
     expect(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ })).toBeInTheDocument();
     expect(screen.queryByText("Impact · Objectif")).not.toBeInTheDocument();
@@ -1036,7 +1036,7 @@ describe("teamName", () => {
 
     await user.type(screen.getByPlaceholderText(/Team Phoenix/i), "Team Alpha");
     await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
-    await user.click(screen.getByRole("button", { name: /↻ Recommencer/ }));
+    await user.click(screen.getByRole("button", { name: /Recommencer depuis le début/ }));
 
     // Le champ réapparaît vide (SymptomScreen re-monte avec state local frais)
     expect(screen.getByPlaceholderText(/Team Phoenix/i)).toHaveValue("");

@@ -3,7 +3,7 @@ import { C, MONO, sectionHeaderStyle, Badge, severityLabel } from "../App.jsx";
 
 export default function PlanMetrics({ plan, cause, sev }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20, alignItems: "start" }}>
+    <div className="plan-grid" style={{ marginBottom: 20, alignItems: "start" }}>
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
         <div style={sectionHeaderStyle}>Impact · Objectif</div>
         <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, borderRadius: 4, padding: "10px 12px", marginBottom: 10 }}>
