@@ -1,2 +1,20 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { -webkit-font-smoothing: antialiased; }
+
+/* Focus ring for keyboard navigation — replaces the removed outline:none on btnReset */
+:focus-visible {
+  outline: 2px solid #0369a1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Step transition */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.screen-enter { animation: fadeIn 180ms ease-out; }
+
+/* Responsive 2-column grid used in plan sub-components */
+.plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .plan-grid { grid-template-columns: 1fr; } }

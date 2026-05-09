@@ -164,7 +164,7 @@ function Header() {
     <div style={{ marginBottom: 28, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
       <div style={{ fontSize: 12, color: C.muted, letterSpacing: 1, textTransform: "uppercase" }}>Collaboration Solved · V2.5 · rev. 8</div>
       <div style={{ fontSize: 22, fontWeight: 600, marginTop: 4, color: C.ink }}>Team Dysfunction Diagnostic</div>
-      <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Flow & Livraison — Plans d'action : 5/21 implémentés</div>
+      <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Diagnostic de dysfonctionnement · Flow & Livraison</div>
     </div>
   );
 }
@@ -174,19 +174,20 @@ function SymptomScreen({ onPick }) {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <label style={{ display: "block", fontSize: 12, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+        <label htmlFor="team-name" style={{ display: "block", fontSize: 12, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
           Nom de l'équipe <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optionnel)</span>
         </label>
         <input
+          id="team-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="ex. Team Phoenix"
-          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: FONT, fontSize: 14, color: C.ink, background: C.surface, outline: "none" }}
+          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: FONT, fontSize: 14, color: C.ink, background: C.surface }}
         />
       </div>
       <SectionTitle n="01" label="Symptôme observé" />
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {SYMPTOMS.map((s) => (
           <button key={s.id} onClick={() => onPick(s, name.trim())}
             style={{ ...btnReset, textAlign: "left", padding: "14px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
@@ -203,9 +204,9 @@ function SymptomScreen({ onPick }) {
 
 function DiagnosisScreen({ symptom, tree, currentNodeId, currentNode, path, onAnswer, onBack, onRestart }) {
   return (
-    <div>
+    <div className="screen-enter">
       <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel={path.length === 0 ? "← Symptôme" : "← Précédent"} />
-      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label={`Question ${path.length + 1}`} nodeId={currentNodeId} />
+      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label={`Question ${path.length + 1}`} />
       <div style={{ fontSize: 17, fontWeight: 500, color: C.ink, marginBottom: 10, lineHeight: 1.4 }}>{currentNode.question}</div>
       {currentNode.hint && (
         <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, color: C.hintText, fontSize: 13, padding: "8px 12px", borderRadius: 4, marginBottom: 16, lineHeight: 1.45 }}>
@@ -216,11 +217,10 @@ function DiagnosisScreen({ symptom, tree, currentNodeId, currentNode, path, onAn
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
         {currentNode.answers.map((a, i) => (
           <button key={i} onClick={() => onAnswer(a)}
-            style={{ ...btnReset, textAlign: "left", padding: "12px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
+            style={{ ...btnReset, textAlign: "left", padding: "12px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.borderStrong; e.currentTarget.style.background = "#f5f5f4"; }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>
             <span>{a.label}</span>
-            <span style={{ fontFamily: MONO, fontSize: 10, color: C.muted, flexShrink: 0 }}>{a.next}</span>
           </button>
         ))}
       </div>
@@ -236,9 +236,9 @@ function ResultScreen({ symptom, tree, treeFocus, terminalId, path, onBack, onRe
   const focusLabel = treeFocus ? TREES[treeFocus].label : tree.label;
   const hasPlan = Boolean(ACTION_PLANS[terminalId]);
   return (
-    <div>
+    <div className="screen-enter">
       <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Modifier dernière réponse" />
-      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label="Cause identifiée" nodeId={terminalId} />
+      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label="Cause identifiée" />
       <div style={{ border: `1px solid ${C.border}`, borderLeft: `3px solid ${sev}`, background: C.surface, padding: "18px 20px", borderRadius: 6, marginBottom: 20 }}>
         <div style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 10 }}>{cause.label}</div>
         <div style={{ fontSize: 14, color: C.text, lineHeight: 1.55, marginBottom: 14 }}>{cause.description}</div>
@@ -252,7 +252,13 @@ function ResultScreen({ symptom, tree, treeFocus, terminalId, path, onBack, onRe
       <PathTrail path={path} />
       <div style={{ marginTop: 24 }}>
         {hasPlan ? (
-          <button onClick={onPlan} style={primaryBtn}>Voir le plan d'action →</button>
+          <button onClick={onPlan} style={primaryBtn}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+            onMouseDown={(e) => { e.currentTarget.style.opacity = "0.7"; }}
+            onMouseUp={(e) => { e.currentTarget.style.opacity = "0.85"; }}>
+            Voir le plan d'action →
+          </button>
         ) : (
           <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>Plan d'action — à implémenter.</div>
         )}
@@ -269,7 +275,7 @@ function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBa
   const variant = treeFocus && pitch.focusVariant ? pitch.focusVariant[treeFocus] : null;
 
   return (
-    <div>
+    <div className="screen-enter">
       <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Retour au résultat" />
       <PlanHeader cause={cause} teamName={teamName} path={path} terminalId={terminalId} />
       <PlanMetrics plan={plan} cause={cause} sev={sev} />
@@ -289,18 +295,17 @@ function ContextStrip({ symptom, tree, onBack, onRestart, backLabel }) {
       </div>
       <div style={{ display: "flex", gap: 6 }}>
         <button onClick={onBack} style={linkBtn}>{backLabel}</button>
-        <button onClick={onRestart} style={linkBtn}>↻ Recommencer</button>
+        <button onClick={onRestart} style={linkBtn} aria-label="Recommencer depuis le début">↻ Recommencer</button>
       </div>
     </div>
   );
 }
 
-function SectionTitle({ n, label, nodeId }) {
+function SectionTitle({ n, label }) {
   return (
     <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
       <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted }}>{n}</span>
       <span style={{ fontSize: 13, fontWeight: 600, color: C.ink, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</span>
-      {nodeId && <span style={{ fontFamily: MONO, fontSize: 10, color: C.muted, marginLeft: "auto" }}>[{nodeId}]</span>}
     </div>
   );
 }
@@ -329,8 +334,8 @@ function Badge({ color, children }) {
   );
 }
 
-const btnReset = { font: "inherit", color: "inherit", outline: "none" };
-const linkBtn = { ...btnReset, border: "none", background: "transparent", fontSize: 12, color: C.muted, cursor: "pointer", padding: "4px 6px", textDecoration: "underline", textUnderlineOffset: 3 };
-const primaryBtn = { ...btnReset, border: `1px solid ${C.ink}`, background: C.ink, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "10px 20px", borderRadius: 6, letterSpacing: 0.2 };
+const btnReset = { font: "inherit", color: "inherit" };
+const linkBtn = { ...btnReset, border: "none", background: "transparent", fontSize: 12, color: C.muted, cursor: "pointer", padding: "0 10px", minHeight: 44, display: "inline-flex", alignItems: "center", textDecoration: "underline", textUnderlineOffset: 3 };
+const primaryBtn = { ...btnReset, border: `1px solid ${C.ink}`, background: C.ink, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "10px 20px", borderRadius: 6, letterSpacing: 0.2, minHeight: 44 };
 
 export { CAUSES, ACTION_PLANS, SYMPTOMS, TREES, SHARED_NODES, lookupNode, severityLabel, severityColor, palierMeta, validateTrees, C, MONO, sectionHeaderStyle, Badge, SectionTitle };

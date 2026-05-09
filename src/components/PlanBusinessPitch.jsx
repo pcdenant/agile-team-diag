@@ -7,7 +7,7 @@ export default function PlanBusinessPitch({ pitch, variant }) {
     <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface, marginBottom: 20 }}>
       <div style={sectionHeaderStyle}>Parler business</div>
       {variant ? (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+        <div className="plan-grid" style={{ marginBottom: 14 }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 4 }}>Statu quo</div>
             <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55 }}>{variant.statusQuoCost}</div>
