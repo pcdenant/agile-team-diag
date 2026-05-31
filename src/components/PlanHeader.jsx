@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { C, SectionTitle } from "../utils/ui.jsx";
 
 export default function PlanHeader({ cause, teamName, path, terminalId }) {
@@ -10,3 +11,10 @@ export default function PlanHeader({ cause, teamName, path, terminalId }) {
     </div>
   );
 }
+
+PlanHeader.propTypes = {
+  cause: PropTypes.object.isRequired,
+  teamName: PropTypes.string,
+  path: PropTypes.array.isRequired,
+  terminalId: PropTypes.string.isRequired,
+};
