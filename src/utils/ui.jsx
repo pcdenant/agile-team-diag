@@ -1,10 +1,11 @@
 import React from "react";
 import { C, MONO } from "../theme.js";
+import { SEVERITY } from "../constants.js";
 
 export { C, MONO, sectionHeaderStyle } from "../theme.js";
 
-export function severityLabel(s) { return s === "high" ? "Critique" : s === "medium" ? "Modéré" : "Faible"; }
-export function severityColor(s) { return s === "high" ? C.high : s === "medium" ? C.med : C.low; }
+export function severityLabel(s) { return s === SEVERITY.HIGH ? "Critique" : s === SEVERITY.MEDIUM ? "Modéré" : "Faible"; }
+export function severityColor(s) { return s === SEVERITY.HIGH ? C.high : s === SEVERITY.MEDIUM ? C.med : C.low; }
 export function palierMeta(p) {
   if (p === 1) return { label: "Palier 1 — Données à collecter", color: C.palier1 };
   if (p === 2) return { label: "Palier 2 — Impact à quantifier", color: C.palier2 };
