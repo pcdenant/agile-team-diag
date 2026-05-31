@@ -1,5 +1,5 @@
 import React from "react";
-import { C, SectionTitle } from "../App.jsx";
+import { C, SectionTitle } from "../utils/ui.jsx";
 
 export default function PlanHeader({ cause, teamName, path, terminalId }) {
   return (

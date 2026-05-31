@@ -1,5 +1,5 @@
 import React from "react";
-import { C, sectionHeaderStyle } from "../App.jsx";
+import { C, sectionHeaderStyle } from "../utils/ui.jsx";
 
 export default function PlanBusinessPitch({ pitch, variant }) {
   if (!variant && !pitch.leadershipQuestion) return null;

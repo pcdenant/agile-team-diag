@@ -1,5 +1,5 @@
 import React from "react";
-import { C, MONO, sectionHeaderStyle, Badge, severityLabel } from "../App.jsx";
+import { C, MONO, sectionHeaderStyle, Badge, severityLabel } from "../utils/ui.jsx";
 
 export default function PlanMetrics({ plan, cause, sev }) {
   return (

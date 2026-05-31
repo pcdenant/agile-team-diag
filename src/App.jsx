@@ -8,6 +8,8 @@ import PlanHeader from "./components/PlanHeader.jsx";
 import PlanMetrics from "./components/PlanMetrics.jsx";
 import PlanBusinessPitch from "./components/PlanBusinessPitch.jsx";
 import PlanExperiments from "./components/PlanExperiments.jsx";
+import { C, FONT, MONO, sectionHeaderStyle, btnReset, linkBtn, primaryBtn } from "./theme.js";
+import { severityLabel, severityColor, palierMeta, Badge, SectionTitle } from "./utils/ui.jsx";
 
 // --- RUNTIME VALIDATION ---------------------------------------------------
 
@@ -70,34 +72,6 @@ function lookupNode(treeId, nodeId) {
     if (TREES[id].nodes[nodeId]) return TREES[id].nodes[nodeId];
   }
   return null;
-}
-
-// --- HELPERS --------------------------------------------------------------
-
-const FONT = "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-const MONO = "ui-monospace, 'SF Mono', Menlo, monospace";
-
-const C = {
-  bg: "#fafaf9", surface: "#ffffff", text: "#171717", muted: "#737373",
-  border: "#e5e5e5", borderStrong: "#404040", ink: "#0a0a0a",
-  high: "#b91c1c", med: "#b45309", low: "#737373",
-  palier1: "#0369a1", palier2: "#7c3aed", palier3: "#b91c1c", palierObs: "#737373",
-  hintBg: "#fef9c3", hintBorder: "#fde047", hintText: "#713f12",
-  infoBg: "#f0f9ff", infoBorder: "#bae6fd", infoText: "#0369a1", infoTextDark: "#0c4a6e",
-};
-
-const sectionHeaderStyle = {
-  fontSize: 11, fontWeight: 700, color: C.muted,
-  textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12,
-};
-
-function severityLabel(s) { return s === "high" ? "Critique" : s === "medium" ? "Modéré" : "Faible"; }
-function severityColor(s) { return s === "high" ? C.high : s === "medium" ? C.med : C.low; }
-function palierMeta(p) {
-  if (p === 1) return { label: "Palier 1 — Données à collecter", color: C.palier1 };
-  if (p === 2) return { label: "Palier 2 — Impact à quantifier", color: C.palier2 };
-  if (p === 3) return { label: "Palier 3 — Décision à déclencher", color: C.palier3 };
-  return { label: "Hors palier — Observation requise", color: C.palierObs };
 }
 
 // --- COMPONENTS -----------------------------------------------------------
@@ -325,15 +299,6 @@ function ContextStrip({ symptom, tree, onBack, onRestart, backLabel }) {
   );
 }
 
-function SectionTitle({ n, label }) {
-  return (
-    <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
-      <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted }}>{n}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: C.ink, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</span>
-    </div>
-  );
-}
-
 function PathTrail({ path }) {
   return (
     <div style={{ border: `1px dashed ${C.border}`, borderRadius: 6, padding: "12px 14px", background: "#fafafa" }}>
@@ -349,17 +314,5 @@ function PathTrail({ path }) {
     </div>
   );
 }
-
-function Badge({ color, children }) {
-  return (
-    <span style={{ display: "inline-block", fontSize: 11, fontWeight: 600, color, border: `1px solid ${color}`, padding: "3px 8px", borderRadius: 999, letterSpacing: 0.2, background: "#fff" }}>
-      {children}
-    </span>
-  );
-}
-
-const btnReset = { font: "inherit", color: "inherit" };
-const linkBtn = { ...btnReset, border: "none", background: "transparent", fontSize: 12, color: C.muted, cursor: "pointer", padding: "0 10px", minHeight: 44, display: "inline-flex", alignItems: "center", textDecoration: "underline", textUnderlineOffset: 3 };
-const primaryBtn = { ...btnReset, border: `1px solid ${C.ink}`, background: C.ink, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "10px 20px", borderRadius: 6, letterSpacing: 0.2, minHeight: 44 };
 
 export { CAUSES, ACTION_PLANS, SYMPTOMS, TREES, SHARED_NODES, lookupNode, severityLabel, severityColor, palierMeta, validateTrees, C, MONO, sectionHeaderStyle, Badge, SectionTitle };
