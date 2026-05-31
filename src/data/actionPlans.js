@@ -329,6 +329,16 @@ export const ACTION_PLANS = {
     ownerNote: "SM — 10 min en fin de sprint, intégré au bilan ou à la rétro.",
     businessPitch: {
       leadershipQuestion: "\"On a [X] jours de capacité bloqués à chaque sprint à cause de cette dépendance. On peut en parler dans le prochain comité ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "Chaque sprint démarre avec des items qui ne peuvent pas avancer parce qu'une dépendance externe n'est ni tracée ni chiffrée. La capacité planifiée est consommée en attente invisible : [X] jours perdus par sprint, sans que le coût apparaisse dans aucun rapport.",
+          expectedResult: "Tracer et chiffrer ces dépendances au démarrage convertit une perte invisible en coût connu — première condition pour récupérer cette capacité sprint après sprint.",
+        },
+        time_to_market: {
+          statusQuoCost: "Les items prioritaires n'arrivent pas à démarrer à cause d'une dépendance externe non tracée. Chaque jour d'attente sans décision de résolution s'ajoute directement au cycle time — sans que personne dans l'organisation ne voie le coût réel.",
+          expectedResult: "Nommer et chiffrer la dépendance transforme un délai subi en coût visible. C'est la condition pour que la résolution devienne une décision prioritaire plutôt qu'un problème ignoré.",
+        },
+      },
     },
   },
   c2q: {
@@ -357,6 +367,16 @@ export const ACTION_PLANS = {
     ownerNote: "SM — 10 min en Sprint Planning + suivi en rétro.",
     businessPitch: {
       leadershipQuestion: "\"Cette dépendance coûte [X jours] par sprint depuis [N sprints]. On peut régler ça avec un accord entre les deux équipes. Est-ce qu'on se donne deux semaines pour tester ?\"",
+      focusVariant: {
+        predictability: {
+          statusQuoCost: "L'impact est chiffré : [X] jours de capacité perdus par sprint depuis [N] sprints. Le blocage au démarrage se répète à chaque cycle. Le sprint commitment ne peut pas tenir si une dépendance connue et coûteuse reste sans résolution dans le périmètre disponible.",
+          expectedResult: "La décision est dans votre périmètre. Intégrer cette dépendance dans le Sprint Planning et poser un accord de service minimal réduit directement le blocage récurrent — et restaure la capacité planifiée.",
+        },
+        time_to_market: {
+          statusQuoCost: "Cette dépendance au démarrage est quantifiée : [X] jours d'attente par cycle, [Y] items affectés. Chaque sprint qui repart sans décision est un sprint de plus à absorber ce délai en entrée de flux.",
+          expectedResult: "Un accord de service avec la source réduit le délai d'attente au démarrage. Ce qui était du temps perdu avant chaque item devient du temps récupéré sur le cycle time global.",
+        },
+      },
     },
   },
   c_cap: {
