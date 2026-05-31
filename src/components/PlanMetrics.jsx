@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { C, MONO, sectionHeaderStyle, Badge, severityLabel } from "../utils/ui.jsx";
 
 export default function PlanMetrics({ plan, cause, sev }) {
@@ -22,7 +23,7 @@ export default function PlanMetrics({ plan, cause, sev }) {
           </thead>
           <tbody>
             {plan.indicators.map((ind, i) => (
-              <tr key={i}>
+              <tr key={ind.metric}>
                 <td style={{ padding: "6px 8px 6px 0", color: C.text, lineHeight: 1.4, borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none" }}>{ind.metric}</td>
                 <td style={{ padding: "6px 8px", color: C.ink, fontWeight: 500, textAlign: "right", borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none", whiteSpace: "nowrap" }}>{ind.target}</td>
                 <td style={{ padding: "6px 0 6px 8px", color: C.muted, textAlign: "right", borderBottom: i < plan.indicators.length - 1 ? `1px solid ${C.border}` : "none", whiteSpace: "nowrap" }}>{ind.frequency}</td>
@@ -53,3 +54,9 @@ export default function PlanMetrics({ plan, cause, sev }) {
     </div>
   );
 }
+
+PlanMetrics.propTypes = {
+  plan: PropTypes.object.isRequired,
+  cause: PropTypes.object.isRequired,
+  sev: PropTypes.string.isRequired,
+};
