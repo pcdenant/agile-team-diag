@@ -1,0 +1,32 @@
+import React from "react";
+import { C, btnReset } from "../theme.js";
+import { SectionTitle } from "../utils/ui.jsx";
+import ContextStrip from "../components/ContextStrip.jsx";
+import PathTrail from "../components/PathTrail.jsx";
+
+export default function DiagnosisScreen({ symptom, tree, currentNodeId, currentNode, path, onAnswer, onBack, onRestart }) {
+  return (
+    <div className="screen-enter">
+      <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel={path.length === 0 ? "← Symptôme" : "← Précédent"} />
+      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label={`Question ${path.length + 1}`} />
+      <div style={{ fontSize: 17, fontWeight: 500, color: C.ink, marginBottom: 10, lineHeight: 1.4 }}>{currentNode.question}</div>
+      {currentNode.hint && (
+        <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, color: C.hintText, fontSize: 13, padding: "8px 12px", borderRadius: 4, marginBottom: 16, lineHeight: 1.45 }}>
+          <span style={{ fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, marginRight: 6 }}>Indice</span>
+          {currentNode.hint}
+        </div>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+        {currentNode.answers.map((a, i) => (
+          <button key={i} onClick={() => onAnswer(a)}
+            style={{ ...btnReset, textAlign: "left", padding: "12px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.borderStrong; e.currentTarget.style.background = "#f5f5f4"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>
+            <span>{a.label}</span>
+          </button>
+        ))}
+      </div>
+      {path.length > 0 && <PathTrail path={path} />}
+    </div>
+  );
+}

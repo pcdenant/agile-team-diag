@@ -4,12 +4,15 @@ import { ACTION_PLANS } from "./data/actionPlans.js";
 import { SYMPTOMS } from "./data/symptoms.js";
 import { SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES } from "./data/trees.js";
 import { STEPS } from "./constants.js";
-import PlanHeader from "./components/PlanHeader.jsx";
-import PlanMetrics from "./components/PlanMetrics.jsx";
-import PlanBusinessPitch from "./components/PlanBusinessPitch.jsx";
-import PlanExperiments from "./components/PlanExperiments.jsx";
-import { C, FONT, MONO, sectionHeaderStyle, btnReset, linkBtn, primaryBtn } from "./theme.js";
-import { severityLabel, severityColor, palierMeta, Badge, SectionTitle } from "./utils/ui.jsx";
+import { C, FONT, sectionHeaderStyle, btnReset, linkBtn, primaryBtn } from "./theme.js";
+import { severityLabel, severityColor, palierMeta, Badge, SectionTitle, MONO } from "./utils/ui.jsx";
+import Header from "./components/Header.jsx";
+import ContextStrip from "./components/ContextStrip.jsx";
+import PathTrail from "./components/PathTrail.jsx";
+import SymptomScreen from "./screens/SymptomScreen.jsx";
+import DiagnosisScreen from "./screens/DiagnosisScreen.jsx";
+import ResultScreen from "./screens/ResultScreen.jsx";
+import PlanScreen from "./screens/PlanScreen.jsx";
 
 // --- RUNTIME VALIDATION ---------------------------------------------------
 
@@ -74,7 +77,7 @@ function lookupNode(treeId, nodeId) {
   return null;
 }
 
-// --- COMPONENTS -----------------------------------------------------------
+// --- APP ------------------------------------------------------------------
 
 export default function App() {
   const [step, setStep] = useState(STEPS.SYMPTOM);
@@ -153,164 +156,6 @@ export default function App() {
           <PlanScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} teamName={teamName} path={path} onBack={backOne} onRestart={restart} />
         )}
       </div>
-    </div>
-  );
-}
-
-function Header() {
-  return (
-    <div style={{ marginBottom: 28, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ fontSize: 12, color: C.muted, letterSpacing: 1, textTransform: "uppercase" }}>Collaboration Solved · V2.5 · rev. 8</div>
-      <div style={{ fontSize: 22, fontWeight: 600, marginTop: 4, color: C.ink }}>Team Dysfunction Diagnostic</div>
-      <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Diagnostic de dysfonctionnement · Flow & Livraison</div>
-    </div>
-  );
-}
-
-function SymptomScreen({ onPick }) {
-  const [name, setName] = useState("");
-  return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <label htmlFor="team-name" style={{ display: "block", fontSize: 12, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
-          Nom de l'équipe <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optionnel)</span>
-        </label>
-        <input
-          id="team-name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="ex. Team Phoenix"
-          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: `1px solid ${C.border}`, borderRadius: 6, fontFamily: FONT, fontSize: 14, color: C.ink, background: C.surface }}
-        />
-      </div>
-      <SectionTitle n="01" label="Symptôme observé" />
-      <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {SYMPTOMS.map((s) => (
-          <button key={s.id} onClick={() => onPick(s, name.trim())}
-            style={{ ...btnReset, textAlign: "left", padding: "14px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.borderStrong)}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}>
-            <span style={{ fontWeight: 500 }}>{s.label}</span>
-            <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted, flexShrink: 0 }}>→ {TREES[s.tree].label.toLowerCase()}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DiagnosisScreen({ symptom, tree, currentNodeId, currentNode, path, onAnswer, onBack, onRestart }) {
-  return (
-    <div className="screen-enter">
-      <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel={path.length === 0 ? "← Symptôme" : "← Précédent"} />
-      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label={`Question ${path.length + 1}`} />
-      <div style={{ fontSize: 17, fontWeight: 500, color: C.ink, marginBottom: 10, lineHeight: 1.4 }}>{currentNode.question}</div>
-      {currentNode.hint && (
-        <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, color: C.hintText, fontSize: 13, padding: "8px 12px", borderRadius: 4, marginBottom: 16, lineHeight: 1.45 }}>
-          <span style={{ fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, marginRight: 6 }}>Indice</span>
-          {currentNode.hint}
-        </div>
-      )}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-        {currentNode.answers.map((a, i) => (
-          <button key={i} onClick={() => onAnswer(a)}
-            style={{ ...btnReset, textAlign: "left", padding: "12px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.borderStrong; e.currentTarget.style.background = "#f5f5f4"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>
-            <span>{a.label}</span>
-          </button>
-        ))}
-      </div>
-      {path.length > 0 && <PathTrail path={path} />}
-    </div>
-  );
-}
-
-function ResultScreen({ symptom, tree, treeFocus, terminalId, path, onBack, onRestart, onPlan }) {
-  const cause = CAUSES[terminalId];
-  const sev = severityColor(cause.severity);
-  const palier = palierMeta(cause.palier);
-  const focusLabel = treeFocus ? TREES[treeFocus].label : tree.label;
-  const hasPlan = Boolean(ACTION_PLANS[terminalId]);
-  return (
-    <div className="screen-enter">
-      <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Modifier dernière réponse" />
-      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label="Cause identifiée" />
-      <div style={{ border: `1px solid ${C.border}`, borderLeft: `3px solid ${sev}`, background: C.surface, padding: "18px 20px", borderRadius: 6, marginBottom: 20 }}>
-        <div style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 10 }}>{cause.label}</div>
-        <div style={{ fontSize: 14, color: C.text, lineHeight: 1.55, marginBottom: 14 }}>{cause.description}</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          <Badge color={sev}>Sévérité : {severityLabel(cause.severity)}</Badge>
-          <Badge color={palier.color}>{palier.label}</Badge>
-          <Badge color={C.borderStrong}>Propriétaire : {cause.owner}</Badge>
-          <Badge color={C.muted}>Focus arbre : {focusLabel}</Badge>
-        </div>
-      </div>
-      <PathTrail path={path} />
-      <div style={{ marginTop: 24 }}>
-        {hasPlan ? (
-          <button onClick={onPlan} style={primaryBtn}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-            onMouseDown={(e) => { e.currentTarget.style.opacity = "0.7"; }}
-            onMouseUp={(e) => { e.currentTarget.style.opacity = "0.85"; }}>
-            Voir le plan d'action →
-          </button>
-        ) : (
-          <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>Plan d'action — à implémenter.</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function PlanScreen({ symptom, tree, treeFocus, terminalId, teamName, path, onBack, onRestart }) {
-  const cause = CAUSES[terminalId];
-  const plan = ACTION_PLANS[terminalId];
-  const sev = severityColor(cause.severity);
-  const pitch = plan.businessPitch;
-  const variant = treeFocus && pitch.focusVariant ? pitch.focusVariant[treeFocus] : null;
-
-  return (
-    <div className="screen-enter">
-      <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Retour au résultat" />
-      <PlanHeader cause={cause} teamName={teamName} path={path} terminalId={terminalId} />
-      <PlanMetrics plan={plan} cause={cause} sev={sev} />
-      <PlanBusinessPitch pitch={pitch} variant={variant} />
-      <PlanExperiments experiments={plan.experiments} />
-    </div>
-  );
-}
-
-function ContextStrip({ symptom, tree, onBack, onRestart, backLabel }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 20, paddingBottom: 12, borderBottom: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-      <div style={{ fontSize: 12, color: C.muted }}>
-        <span style={{ fontFamily: MONO }}>{tree.label}</span>
-        <span style={{ margin: "0 6px", opacity: 0.5 }}>·</span>
-        <span>{symptom.label}</span>
-      </div>
-      <div style={{ display: "flex", gap: 6 }}>
-        <button onClick={onBack} style={linkBtn}>{backLabel}</button>
-        <button onClick={onRestart} style={linkBtn} aria-label="Recommencer depuis le début">↻ Recommencer</button>
-      </div>
-    </div>
-  );
-}
-
-function PathTrail({ path }) {
-  return (
-    <div style={{ border: `1px dashed ${C.border}`, borderRadius: 6, padding: "12px 14px", background: "#fafafa" }}>
-      <div style={{ fontSize: 11, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Chemin de diagnostic</div>
-      <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13 }}>
-        {path.map((p, i) => (
-          <li key={i} style={{ marginBottom: 8, lineHeight: 1.4 }}>
-            <div style={{ color: C.muted, fontSize: 12 }}><span style={{ fontFamily: MONO, fontSize: 10 }}>[{p.nodeId}]</span> {p.question}</div>
-            <div style={{ color: C.text }}>→ {p.answer}</div>
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }
