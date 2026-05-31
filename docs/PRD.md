@@ -6,7 +6,7 @@
 **Cible future** : Web app standalone  
 **Version** : 2.5  
 **Basé sur** : V1.0-refactored (2025-02-25)  
-**Statut** : Arbre Flow validé — Plans d'action à implémenter
+**Statut** : Arbre Flow validé ✅ — Plans d'action implémentés ✅ (21/21)
 
 ---
 
@@ -61,7 +61,7 @@ Ces hypothèses délimitent ce que les arbres diagnostiquent. Les éléments hor
 - Badges : Sévérité / Palier de maturité / Propriétaire / Focus arbre
 - Chemin de diagnostic complet (trail d'élimination)
 
-### Étape 4 — Plan d'action (layout quadrants) — *à implémenter*
+### Étape 4 — Plan d'action (layout quadrants)
 
 **Haut gauche — Impact — Objectif**
 - Coût du problème non résolu (encart jaune)
@@ -181,16 +181,15 @@ Formulée explicitement à chaque nœud de décision finale (palier 2 → 3). Di
 
 *Note : les causes c5, c5q, c6, c6u, c1, c3, c4, c4q présentes dans le PRD original ont été scindées ou remplacées par les variantes contextuelles ci-dessus. `none` est supprimé — l'arbre atteint toujours une cause ou `exit_observe`. `exit_quality` a été renommé `c_defects` en rev. 7.*
 
-### Plans d'action (à implémenter — priorité prochaine itération)
+### Plans d'action (21/21 implémentés)
 
-Volume estimé par cause :
+Volume par cause :
 
-| Cause | Actions | Expérimentations | Indicateurs |
-|-------|---------|-----------------|-------------|
-| Chaque cause palier 1 (×17) | 2–3 | 2–3 | 2–3 |
-| Chaque cause palier 2 (×4) | 2 | 2 | 3 |
-| c_org (palier 3) | 3 | 3 | 4 |
-| c_defects | 1 (collecte) | 1 | 2 |
+| Cause | Expérimentations | Indicateurs |
+|-------|-----------------|-------------|
+| Chaque cause palier 1 (×17) | 2 | 2–3 |
+| Chaque cause palier 2 (×4) | 2 | 2–3 |
+| c_org (palier 3) | 3 | 3 |
 
 ---
 
@@ -254,45 +253,28 @@ type DiagnosisAnswer = {
 
 *Note : la sauvegarde de la progression (reprise de parcours entre sessions) est une fonctionnalité identifiée, non implémentée. Elle est reportée à une version ultérieure.*
 
-### Action Plan (schéma cible — à implémenter)
+### Action Plan (schéma réel implémenté)
 
 ```typescript
 {
-  collect: {
-    what: string,          // quoi collecter
-    report: string,        // rapport visé
-    cost: string,          // coût du problème (quadrant Impact)
-    check: string,         // critère de fiabilité
-    protocol?: {           // Protocole Blocage MV (causes de dépendance)
-      fields: string[],
-      ritual: string,
-      clusterTable: boolean,
-      constraintRule: string,
-    }
-  },
-  actions: {
-    what: string,
-    why: string,
-    whyNow: string,
-    impact: "high" | "medium" | "low",
-  }[],
+  cost: string,           // formule de coût avec placeholders [X]
+  costHint: string,       // explication comment remplir cost
   experiments: {
-    label: string,
-    actionIndex: number,
-    do: string,
-    observe: string,
-    confirm: string,
+    label: string,        // titre de l'expérimentation
+    timing: string,       // ex. "cette semaine" | "ce sprint" | "sprint suivant"
+    description: string,  // ce que l'équipe fait concrètement
+    criterion: string,    // critère de réussite observable
+    gate: boolean,        // true = point d'arrêt avant l'étape suivante
   }[],
   indicators: {
     metric: string,
     target: string,
-    why: string,
+    frequency: string,
   }[],
+  ownerNote: string,
   businessPitch: {
-    statusQuoCost: string,
-    expectedResult: string,
     leadershipQuestion: string,
-    focusVariant?: {
+    focusVariant?: {      // absent pour causes Predictability-only (c2, c2q, c_cap)
       predictability: { statusQuoCost: string, expectedResult: string },
       time_to_market: { statusQuoCost: string, expectedResult: string },
     }
@@ -363,9 +345,9 @@ Règle de détection contrainte : même Source × 3 items → signal ⚠️ Cont
 
 ## Roadmap
 
-### V2.5 — Arbre validé ✅ / Plans d'action à implémenter
+### V2.5 — Arbre validé ✅ / Plans d'action implémentés ✅ (21/21)
 
-Arbre de décision Flow complet (21 causes, 2 arbres, SHARED_NODES). Prochaine étape : rédaction et implémentation des plans d'action cause par cause, avec validation de contenu avant code.
+Arbre de décision Flow complet (21 causes, 2 arbres, SHARED_NODES). Plans d'action implémentés cause par cause jusqu'à v2.5.7 inclus.
 
 ### V4 — Migration web app
 

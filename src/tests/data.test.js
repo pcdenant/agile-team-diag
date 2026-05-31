@@ -62,6 +62,14 @@ describe("ACTION_PLANS", () => {
     PLAN_IDS.forEach((id) => expect(ACTION_PLANS).toHaveProperty(id));
   });
 
+  it("chaque cause (hors exit_observe) a un plan correspondant", () => {
+    Object.keys(CAUSES)
+      .filter((id) => id !== "exit_observe")
+      .forEach((id) => {
+        expect(ACTION_PLANS, `cause "${id}" n'a pas de plan`).toHaveProperty(id);
+      });
+  });
+
   it.each(PLAN_IDS)("plan %s has all required top-level fields", (id) => {
     const plan = ACTION_PLANS[id];
     expect(plan.cost).toBeTruthy();
