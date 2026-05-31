@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CAUSES } from "./data/causes.js";
 import { ACTION_PLANS } from "./data/actionPlans.js";
 import { SYMPTOMS } from "./data/symptoms.js";
@@ -20,40 +20,44 @@ function validateTrees() {
   ]);
 
   const allNodes = { ...SHARED_NODES, ...PREDICTABILITY_NODES, ...TTM_NODES };
-  let errors = 0;
+  const errors = [];
 
   for (const s of SYMPTOMS) {
     if (!allIds.has(s.entry)) {
-      console.error(`[VALIDATION] Symptôme "${s.id}" → entry "${s.entry}" introuvable`);
-      errors++;
+      const msg = `[VALIDATION] Symptôme "${s.id}" → entry "${s.entry}" introuvable`;
+      console.error(msg);
+      errors.push(msg);
     }
   }
 
   for (const [nodeId, node] of Object.entries(allNodes)) {
     if (!node.answers) {
-      console.error(`[VALIDATION] Nœud "${nodeId}" n'a pas de champ answers`);
-      errors++;
+      const msg = `[VALIDATION] Nœud "${nodeId}" n'a pas de champ answers`;
+      console.error(msg);
+      errors.push(msg);
       continue;
     }
     for (const ans of node.answers) {
       if (!ans.next) {
-        console.error(`[VALIDATION] Nœud "${nodeId}" → une réponse sans champ next`);
-        errors++;
+        const msg = `[VALIDATION] Nœud "${nodeId}" → une réponse sans champ next`;
+        console.error(msg);
+        errors.push(msg);
       } else if (!allIds.has(ans.next)) {
-        console.error(`[VALIDATION] Nœud "${nodeId}" → next "${ans.next}" introuvable`);
-        errors++;
+        const msg = `[VALIDATION] Nœud "${nodeId}" → next "${ans.next}" introuvable`;
+        console.error(msg);
+        errors.push(msg);
       }
     }
   }
 
-  if (errors === 0) {
+  if (errors.length === 0) {
     console.log(`[VALIDATION] ✓ ${allIds.size} IDs valides · ${Object.keys(allNodes).length} nœuds vérifiés · 0 erreur`);
   } else {
-    console.error(`[VALIDATION] ${errors} erreur(s) détectée(s) — voir détails ci-dessus`);
+    console.error(`[VALIDATION] ${errors.length} erreur(s) détectée(s) — voir détails ci-dessus`);
   }
-}
 
-validateTrees();
+  return errors;
+}
 
 // --------------------------------------------------------------------------
 
@@ -105,6 +109,12 @@ export default function App() {
   const [path, setPath] = useState([]);
   const [terminalId, setTerminalId] = useState(null);
   const [treeFocus, setTreeFocus] = useState(null);
+  const [dataError, setDataError] = useState(null);
+
+  useEffect(() => {
+    const errors = validateTrees();
+    if (errors.length > 0) setDataError(errors);
+  }, []);
 
   const currentNodeId = path.length > 0 ? path[path.length - 1].next : symptom ? symptom.entry : null;
   const currentNode = currentNodeId && symptom && !CAUSES[currentNodeId]
@@ -139,6 +149,20 @@ export default function App() {
   function restart() { setStep(STEPS.SYMPTOM); setTeamName(null); setSymptom(null); setPath([]); setTerminalId(null); setTreeFocus(null); }
 
   const tree = symptom ? TREES[symptom.tree] : null;
+
+  if (dataError) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#fff1f2", color: "#881337", fontFamily: FONT, padding: "48px 24px" }}>
+        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>⚠ Erreur de données — {dataError.length} problème(s) détecté(s)</div>
+          <ul style={{ fontSize: 13, lineHeight: 1.6, paddingLeft: 20 }}>
+            {dataError.map((e, i) => <li key={i}>{e}</li>)}
+          </ul>
+          <div style={{ marginTop: 16, fontSize: 12, color: "#9f1239" }}>Vérifier les fichiers dans src/data/ — les IDs next: référencés doivent tous exister.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: FONT, fontSize: 15, lineHeight: 1.5, padding: "32px 16px 64px" }}>
