@@ -1,5 +1,5 @@
 import React from "react";
-import { C, sectionHeaderStyle, Badge } from "../App.jsx";
+import { C, sectionHeaderStyle, Badge } from "../utils/ui.jsx";
 
 export default function PlanExperiments({ experiments }) {
   return (
