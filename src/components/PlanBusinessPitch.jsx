@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { C, sectionHeaderStyle } from "../utils/ui.jsx";
 
 export default function PlanBusinessPitch({ pitch, variant }) {
@@ -27,3 +28,8 @@ export default function PlanBusinessPitch({ pitch, variant }) {
     </div>
   );
 }
+
+PlanBusinessPitch.propTypes = {
+  pitch: PropTypes.object.isRequired,
+  variant: PropTypes.object,
+};

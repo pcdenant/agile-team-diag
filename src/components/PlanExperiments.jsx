@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { C, sectionHeaderStyle, Badge } from "../utils/ui.jsx";
 
 export default function PlanExperiments({ experiments }) {
@@ -7,7 +8,7 @@ export default function PlanExperiments({ experiments }) {
       <div style={{ ...sectionHeaderStyle, marginBottom: 16 }}>Adapter · Expérimenter</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
         {experiments.map((exp, i) => (
-          <div key={i}>
+          <div key={exp.label}>
             <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "14px 16px", background: "#fafafa" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{exp.label}</span>
@@ -32,3 +33,7 @@ export default function PlanExperiments({ experiments }) {
     </div>
   );
 }
+
+PlanExperiments.propTypes = {
+  experiments: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
