@@ -1,3 +1,5 @@
+import { TIMING } from "../constants.js";
+
 export const ACTION_PLANS = {
   c_tech: {
     cost: "[items bloqués pour raison technique] × [jours d'attente moyens] × [coût journalier équipe]",
@@ -5,14 +7,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Rendre le blocage traçable",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Ajouter un tag \"bloqué — tech\" sur le board. Dès qu'un item entre en attente pour cause technique, noter : ce qui est bloqué, depuis quand, qui résout côté Ops ou Infra. Pas de reconstitution après coup.",
         criterion: "À la fin du sprint en cours, au moins un blocage tech est tracé avec les trois champs remplis.",
         gate: true,
       },
       {
         label: "Étape 2 — Slot de résolution fixe",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "15 minutes par semaine, heure fixe, avec le responsable Ops ou Infra. Tous les items tagués \"tech\" passent dans ce slot. L'item attend le slot suivant, pas la prochaine fois que quelqu'un est disponible.",
         criterion: "La durée moyenne d'un blocage technique baisse sur 2 sprints consécutifs.",
         gate: false,
@@ -43,14 +45,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Nommer le gate",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "20 minutes en rétro. Une question : \"À quelle étape est-ce qu'on attend quelqu'un d'autre ?\" Un post-it par gate identifié. Pour chaque gate : qui intervient, combien d'items passent, temps d'attente moyen.",
         criterion: "Au moins un gate avec un temps d'attente moyen supérieur à un jour est identifié et nommé.",
         gate: true,
       },
       {
         label: "Étape 2 — Slot fixe sur le gate principal",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "15 minutes par jour, heure fixe, avec le responsable du gate. Tous les items en attente passent à ce moment. L'attente ad hoc disparaît.",
         criterion: "Temps d'attente moyen sous 1 jour sur 2 sprints consécutifs.",
         gate: false,
@@ -81,14 +83,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Fixer une règle de taille",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "En rétro, l'équipe pose un seuil : tout item qui dépasse [X] jours ou [Y] points doit être découpé avant d'entrer en sprint. PO et développeurs ensemble. La règle s'applique dès le prochain sprint planning, pas dans deux semaines.",
         criterion: "Au moins un item découpé selon la règle avant la fin du sprint en cours.",
         gate: true,
       },
       {
         label: "Étape 2 — Intégrer le check taille dans la DoR",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Ajouter un critère d'entrée au sprint : \"taille validée par l'équipe en refinement\". Aucun item ne rentre en sprint sans que le PO et l'équipe aient confirmé qu'il est faisable dans le cycle.",
         criterion: "Zéro item en carryover pour raison de taille sur 2 sprints consécutifs.",
         gate: false,
@@ -119,14 +121,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Photographier le scope au démarrage",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Quand un développeur prend un item : deux lignes dans le ticket, ce qui est inclus, ce qui est exclu. Le PO valide si la description ne lui correspond pas. Pas de formalisme, un commentaire suffit.",
         criterion: "Au moins un item du sprint a une description de scope figée au démarrage.",
         gate: true,
       },
       {
         label: "Étape 2 — Tout ajout devient un ticket",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Tout ajout de scope pendant le sprint : nouveau ticket, ajouté au backlog, discuté au prochain planning. Pas d'ajout silencieux. Le SM facilite le refus quand le PO est sous pression. Les ajouts ne disparaissent pas. Ils attendent.",
         criterion: "Zéro ajout de scope non tracé sur 2 sprints consécutifs.",
         gate: false,
@@ -157,14 +159,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Poser une limite WIP visible",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "En rétro ou en daily : une personne, un item actif à la fois. Si le travail se fait en binôme, deux personnes pour un item actif. Écrire la règle sur le board. L'équipe l'a posée elle-même, elle la tient elle-même.",
         criterion: "Le nombre d'items \"in progress\" ne dépasse pas [X] à aucun moment du sprint suivant.",
         gate: true,
       },
       {
         label: "Étape 2 — Finir avant de commencer",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Quand la limite WIP est atteinte et qu'une main se libère : avant de prendre un nouveau sujet, elle aide à débloquer ce qui est déjà en cours. Le SM facilite le swarming. On ne commence pas, on finit.",
         criterion: "Le throughput — items terminés par sprint — est en hausse sur 2 sprints consécutifs.",
         gate: false,
@@ -195,14 +197,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Tagger chaque blocage au démarrage",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Au prochain standup, introduire une règle simple : tout item qui ne peut pas démarrer reçoit un tag \"bloqué\" sur le board, avec deux infos : qui ou quoi bloque, depuis quand. Le SM collecte en temps réel. Pas de reconstitution après coup.",
         criterion: "Au moins 3 items taggés avec une source identifiée, même partielle, d'ici la fin de la semaine.",
         gate: true,
       },
       {
         label: "Étape 2 — Top 5 des sources de blocage au démarrage",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Avec les données collectées, classer les blocages par fréquence et durée. Présenter en rétro : source, nombre d'items affectés, jours d'attente. Identifier une source externe sur laquelle une action est possible — escalade, accord de service, ou re-planification.",
         criterion: "Au moins une source externe nommée avec un responsable identifié et une action définie.",
         gate: false,
@@ -233,14 +235,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Nommer le blocage au moment où il se produit",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "En Daily, ajouter une question fixe : \"Y a-t-il un item qu'on aurait dû commencer mais qu'on n'a pas encore démarré ?\" Pour chaque item concerné, noter la raison en une phrase — technique, clarification manquante, personne pas disponible, autre. Le SM centralise et ne filtre pas.",
         criterion: "Au moins 2 items avec une raison documentée d'ici la fin de la semaine.",
         gate: true,
       },
       {
         label: "Étape 2 — Rétro courte sur les non-démarrages",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "15 minutes en fin de sprint. Question unique : \"Quels items n'ont pas démarré comme prévu, et qu'est-ce qui les a retenus ?\" Regrouper les raisons par catégorie. Le SM propose une correction sur la catégorie la plus fréquente.",
         criterion: "Une catégorie de cause interne identifiée, avec une action corrective applicable sans escalade.",
         gate: false,
@@ -271,14 +273,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Ready check au Sprint Planning",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Avant d'accepter un item dans le sprint, l'équipe pose deux questions : \"Sait-on comment le faire ?\" et \"Sait-on quand on aura terminé ?\" Si l'une est \"non\", l'item reste au backlog. Le SM anime, le PO décide. Pas de négociation sur ces deux critères.",
         criterion: "Au moins 1 item renvoyé au backlog parce qu'il n'était pas prêt, sans friction avec le PO.",
         gate: true,
       },
       {
         label: "Étape 2 — Fixer 3 critères minimaux de \"prêt\"",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "En refinement, l'équipe et le PO s'accordent sur 3 conditions avant qu'un item entre dans un sprint. Pas une checklist de 15 points. Trois critères, validés en 10 minutes. Le SM documente. On teste un sprint.",
         criterion: "Moins d'items générant une question PO après démarrage qu'au sprint précédent.",
         gate: false,
@@ -309,14 +311,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Tracer les dépendances",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Au prochain standup, poser une seule question : \"Qu'est-ce qu'on attend exactement, et de qui ?\" Créer un tableau simple : item bloqué, source externe, date de début du blocage. Cinq minutes, une ligne par dépendance active.",
         criterion: "Au moins deux dépendances sont tracées avec une source et une durée de blocage lisibles.",
         gate: true,
       },
       {
         label: "Étape 2 — Chiffrer l'impact",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Pour chaque dépendance tracée : multiplier les jours bloqués par le coût journalier de l'équipe. Une estimation suffit. L'objectif est d'avoir un chiffre à montrer, pas une comptabilité parfaite.",
         criterion: "Chaque dépendance active a un impact estimé en jours ou en $, prêt à présenter en réunion.",
         gate: false,
@@ -347,14 +349,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Utiliser les données en planification",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Apporter les chiffres au prochain Sprint Planning. Identifier les items à risque de dépendance externe avant qu'ils entrent dans le sprint. Définir un signal de déclenchement explicite pour chaque item dépendant : ce qui doit être vrai pour que l'item démarre. Pas de démarrage sans signal.",
         criterion: "Au moins un item à dépendance connue a un signal de déclenchement défini. L'équipe ne démarre pas cet item par défaut.",
         gate: true,
       },
       {
         label: "Étape 2 — Poser un accord de service minimal",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Contacter l'équipe ou la personne source. Proposer trois choses : un délai de réponse maximum, un canal de contact unique, une fréquence de synchronisation. Pas un contrat formel. Juste une entente claire sur ce qu'on peut attendre et quand.",
         criterion: "L'accord existe. Le délai moyen sur les dépendances concernées baisse sur les deux sprints suivants.",
         gate: false,
@@ -385,14 +387,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Établir la capacité réelle",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Calculer la capacité réelle de l'équipe pour le dernier sprint : jours disponibles moins congés, réunions fixes, et temps de support récurrent. Comparer au volume planifié. Si l'écart dépasse 20%, le problème n'est pas l'exécution.",
         criterion: "Un ratio capacité réelle / volume planifié existe, lisible par quelqu'un qui ne connaît pas le contexte technique.",
         gate: true,
       },
       {
         label: "Étape 2 — Présenter le cas au management",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Apporter le ratio et le coût estimé de l'écart en réunion de planification ou en one-on-one avec le manager. Proposer deux options concrètes : réduire le volume entrant de [X%], ou définir quels sujets l'équipe arrête de traiter pour libérer de la capacité. Chiffres en main, pas une demande floue.",
         criterion: "La conversation a eu lieu. Une décision, même provisoire, est documentée.",
         gate: false,
@@ -413,14 +415,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Nommer le bloqueur",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "15 minutes en standup étendu ou en flash rétro. Une seule question par item bloqué : \"Qu'est-ce qui empêche concrètement de fermer cet item ?\" Pour chaque item : qui est impliqué à l'extérieur de l'équipe, depuis combien de jours, et pourquoi ça n'a pas bougé.",
         criterion: "Chaque item bloqué a une source externe nommée — une équipe, un système, un rôle — et une durée documentée.",
         gate: true,
       },
       {
         label: "Étape 2 — Signaler et escalader",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Ajouter chaque dépendance externe identifiée dans le Top 5 Blockers. Pour chaque entrée : source, durée, items affectés. Partager avec le responsable de la dépendance dans les 48h.",
         criterion: "Au moins une dépendance externe a été escaladée et a reçu une réponse dans les 48h.",
         gate: false,
@@ -451,14 +453,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Rendre le blocage visible",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "En standup : pour chaque item \"In Progress\" sans mouvement depuis [X] jours, une question — \"Qu'est-ce qui manque pour avancer ?\" Si personne ne peut répondre, l'item passe en état \"Bloqué\" sur le board avec une note de contexte.",
         criterion: "Tous les items en cours depuis plus de [X] jours ont soit une raison de blocage documentée, soit une action de déblocage assignée.",
         gate: true,
       },
       {
         label: "Étape 2 — Identifier le pattern",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "En rétro ou en session dédiée de 30 minutes : regrouper les blocages internes par type — technique, connaissance manquante, clarification fonctionnelle, coordination interne. Identifier le type le plus fréquent.",
         criterion: "Au moins une catégorie de blocage interne récurrent est nommée et documentée.",
         gate: false,
@@ -489,14 +491,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Poser la question en refinement",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Ajouter une question systématique pour chaque item au refinement : \"Est-ce que cet item dépend d'une autre équipe, d'un système, ou d'un expert externe ?\" Si oui, documenter la dépendance avant que l'item entre en sprint. Pas de ticket sans réponse à cette question.",
         criterion: "0 dépendance externe découverte pour la première fois en exécution lors du prochain sprint.",
         gate: true,
       },
       {
         label: "Étape 2 — Tenir un tableau de dépendances anticipées",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Créer et maintenir un tableau simple des dépendances connues à venir : source, item concerné, date limite. Réviser en Sprint Planning et en standup hebdomadaire. Un responsable de suivi côté équipe par dépendance.",
         criterion: "Toutes les dépendances connues ont un responsable de suivi identifié avant le démarrage du sprint.",
         gate: false,
@@ -527,14 +529,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Nommer le goulot",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "20 minutes avec l'équipe, board visible. Trois questions : quel skill manque, qui est la seule personne capable de le couvrir, depuis combien de sprints ce pattern se répète. Documenter les items affectés et la durée de blocage par item.",
         criterion: "Le skill manquant est nommé, la durée du blocage est tracée, les items affectés sont listés.",
         gate: true,
       },
       {
         label: "Étape 2 — Élargir le goulot",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Choisir une option selon le contexte : swarming (un membre de l'équipe travaille en binôme avec l'expert pour co-faire et apprendre), pair programming si le skill est technique, ou documentation des cas les plus fréquents si le skill est procédural. L'objectif est qu'une deuxième personne puisse couvrir les cas simples.",
         criterion: "Au moins un autre membre de l'équipe peut traiter les cas simples liés à ce skill d'ici [X] sprints.",
         gate: false,
@@ -566,14 +568,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Tracer les dépendances actives",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Pour chaque item bloqué en exécution : noter la source (quelle équipe, quel rôle, quel système), la date de blocage, le nombre d'items affectés. Un tableau partagé suffit. 30 minutes avec l'équipe en Daily ou en fin de sprint.",
         criterion: "Chaque dépendance active a un responsable identifié et une date de blocage connue.",
         gate: true,
       },
       {
         label: "Étape 2 — Chiffrer et poser la question",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Calculer les jours perdus par dépendance. Préparer un mini-rapport : source, items affectés, jours bloqués, coût estimé. Présenter au PO et à la strate concernée. Question à poser : \"On sait que ça coûte [X] jours par sprint. Pourquoi ce n'est pas encore résolu ?\"",
         criterion: "L'impact est chiffré pour les 3 dépendances les plus coûteuses. Au moins une a une décision ou un engagement de résolution dans les 2 semaines.",
         gate: false,
@@ -606,14 +608,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Accord de service avec la source",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Contacter directement l'équipe, le rôle ou le système responsable. Objectif : un accord minimal sur un canal de réponse et un délai maximum. Pas une réunion de plus : un Slack, un email, une fréquence. Documenter l'accord par écrit.",
         criterion: "Un accord de service est en place : canal de contact + délai de réponse attendu pour chaque source récurrente.",
         gate: true,
       },
       {
         label: "Étape 2 — Suivi actif jusqu'à résolution",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Suivre chaque dépendance active jusqu'à sa résolution. Si le délai convenu n'est pas respecté : escalade immédiate au PO. Le rapport de dépendances est un outil de conversation, pas un document d'audit.",
         criterion: "Le délai moyen de résolution des dépendances actives passe sous [X] jours sur 2 sprints consécutifs.",
         gate: false,
@@ -646,14 +648,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Mesurer le rework",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Reprendre rétrospectivement les 3 derniers sprints. Identifier les items qui ont été retournés en \"In Progress\" depuis \"Done\", \"Review\" ou \"Testing\". Pour chaque item : noter la raison du retour (bug, test raté, critère d'acceptance manqué). 30 minutes avec l'équipe.",
         criterion: "Le taux de rework des 3 derniers sprints est calculé. Les 3 raisons de retour les plus fréquentes sont identifiées.",
         gate: true,
       },
       {
         label: "Étape 2 — Identifier les patterns",
-        timing: "ce sprint",
+        timing: TIMING.THIS_SPRINT,
         description: "Regrouper les raisons de retour par catégorie. Si la même raison revient sur 3 items ou plus : ce n'est pas un incident, c'est un signal systémique. Présenter les patterns au Tech lead. Désigner un owner pour chaque pattern prioritaire avant la prochaine rétro.",
         criterion: "Au moins un pattern récurrent a un owner désigné et une hypothèse de solution formulée.",
         gate: false,
@@ -685,14 +687,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Cartographier le désaccord",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "30 minutes en rétro avec le PO et un représentant du leadership. Question unique : \"Sur les [X] derniers sprints, quel travail a sauté la file — et qui a décidé que c'était prioritaire ?\" Un post-it par interruption. Pour chaque cas : qui a décidé, selon quelle information, au nom de quoi.",
         criterion: "Au moins 3 cas documentés avec une décision d'urgence clairement attribuée à une personne ou une instance.",
         gate: true,
       },
       {
         label: "Étape 2 — Créer une échelle d'urgence commune",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Avec le PO et un représentant du leadership : définir 3 niveaux d'urgence maximum, avec un exemple concret pour chacun. Chaque niveau répond à \"si ça arrive, l'équipe fait quoi ?\" Afficher l'échelle là où l'équipe travaille. Pendant le sprint suivant, chaque item qui interrompt le plan est tagué avec le niveau correspondant avant d'entrer.",
         criterion: "Chaque interruption du sprint suivant est justifiée par un niveau d'urgence connu de l'équipe avant le début du sprint.",
         gate: false,
@@ -724,14 +726,14 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Rendre le désalignement visible",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "En rétro ou en session dédiée de 30 minutes : demander à chaque membre de l'équipe d'écrire en une phrase \"ce que l'équipe est censée prioriser en ce moment\". Comparer les réponses. Si elles divergent, le problème est structurel, pas une question d'écoute.",
         criterion: "Les réponses divergent sur au moins un point stratégique clé. Le résultat est documenté et présenté au leadership comme fait, pas comme opinion.",
         gate: true,
       },
       {
         label: "Étape 2 — Obtenir 3 critères d'arbitrage concrets",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Avec le leadership : demander 3 critères qui permettent à l'équipe de trancher localement entre deux options sans escalade. Pas de valeurs génériques — des critères qui répondent à \"si on doit choisir entre X et Y, qu'est-ce qui prime ?\" Afficher ces critères là où l'équipe travaille.",
         criterion: "Sur le sprint suivant, au moins une décision de priorisation est prise par l'équipe sans escalade, en référençant ces critères.",
         gate: false,
@@ -763,7 +765,7 @@ export const ACTION_PLANS = {
     experiments: [
       {
         label: "Étape 1 — Poser le coût sur la table",
-        timing: "cette semaine",
+        timing: TIMING.THIS_WEEK,
         description: "Préparer un résumé d'une page : [X] items bloqués en attente d'une décision, [Y] jours d'attente cumulés, [Z] jours d'équipe mobilisés sans livraison. Formulé comme un problème business, pas comme une plainte d'équipe. Présenter au PO. Demander l'accès au bon décideur.",
         criterion: "Un rendez-vous avec le décideur est posé dans les 5 jours ouvrés suivants.",
         gate: true,
@@ -777,7 +779,7 @@ export const ACTION_PLANS = {
       },
       {
         label: "Étape 3 — Fixer une date de décision",
-        timing: "sprint suivant",
+        timing: TIMING.NEXT_SPRINT,
         description: "Si la décision est encore suspendue : proposer une date courte, moins de 7 jours, pour une réponse finale. Au-delà, l'équipe applique l'option par défaut — à définir avec le PO maintenant, avant la réunion. L'objectif est de sortir de l'attente passive.",
         criterion: "La décision est prise avant la date fixée, ou l'option par défaut est activée et documentée.",
         gate: false,
