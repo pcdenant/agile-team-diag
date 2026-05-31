@@ -356,18 +356,19 @@ describe("PlanScreen — c2 (sans focusVariant)", () => {
     expect(screen.getByText(/Lancer l'étape suivante uniquement/)).toBeInTheDocument();
   });
 
-  it("affiche la leadershipQuestion et pas de section Statu quo", async () => {
+  it("affiche la leadershipQuestion et le focusVariant predictability", async () => {
     const user = userEvent.setup();
     render(<App />);
     await goToPlanScreen_c2(user);
 
     expect(screen.getByText(/jours de capacité bloqués à chaque sprint/)).toBeInTheDocument();
-    expect(screen.queryByText(/Statu quo/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Résultat attendu/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Statu quo/)).toBeInTheDocument();
+    expect(screen.getByText(/Résultat attendu/)).toBeInTheDocument();
+    expect(screen.getByText(/attente invisible/)).toBeInTheDocument();
   });
 });
 
-describe("PlanScreen — c2q (sans focusVariant)", () => {
+describe("PlanScreen — c2q (avec focusVariant predictability)", () => {
   async function goToPlanScreen_c2q(user) {
     await navigateTo_p_quantify_dep(user);
     await user.click(screen.getByRole("button", { name: /Oui, l'impact est chiffré/ }));
@@ -375,7 +376,7 @@ describe("PlanScreen — c2q (sans focusVariant)", () => {
     await user.click(screen.getByRole("button", { name: /Voir le plan d'action →/ }));
   }
 
-  it("affiche les étapes c2q et la leadershipQuestion sans focusVariant", async () => {
+  it("affiche les étapes c2q, la leadershipQuestion et le focusVariant predictability", async () => {
     const user = userEvent.setup();
     render(<App />);
     await goToPlanScreen_c2q(user);
@@ -383,7 +384,9 @@ describe("PlanScreen — c2q (sans focusVariant)", () => {
     expect(screen.getByText(/Étape 1 — Utiliser les données en planification/)).toBeInTheDocument();
     expect(screen.getByText(/Étape 2 — Poser un accord de service minimal/)).toBeInTheDocument();
     expect(screen.getByText(/accord entre les deux équipes/)).toBeInTheDocument();
-    expect(screen.queryByText(/Statu quo/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Statu quo/)).toBeInTheDocument();
+    expect(screen.getByText(/Résultat attendu/)).toBeInTheDocument();
+    expect(screen.getByText(/blocage au démarrage se répète/)).toBeInTheDocument();
   });
 });
 

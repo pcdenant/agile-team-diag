@@ -52,8 +52,8 @@ describe("CAUSES", () => {
 // --- ACTION_PLANS ------------------------------------------------------------
 
 const PLAN_IDS = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c2", "c2q", "c_cap", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable", "c4_dep", "c4q_dep", "c_defects", "c_urgency_misalign", "c_strategy_vague", "c_org"];
-const PLANS_WITH_VARIANT = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable", "c4_dep", "c4q_dep", "c_defects", "c_urgency_misalign", "c_strategy_vague", "c_org"];
-const PLANS_WITHOUT_VARIANT = ["c2", "c2q", "c_cap"];
+const PLANS_WITH_VARIANT = ["c_tech", "c_gate", "c_oversize", "c_scope_creep", "c_wip", "c1_ext", "c1_int", "c_dor", "c2", "c2q", "c3_ext", "c3_int", "c_anticipation", "c_skill_unavailable", "c4_dep", "c4q_dep", "c_defects", "c_urgency_misalign", "c_strategy_vague", "c_org"];
+const PLANS_WITHOUT_VARIANT = ["c_cap"];
 const PLANS_WITH_3_STEPS = ["c_org"];
 
 describe("ACTION_PLANS", () => {
@@ -129,7 +129,7 @@ describe("ACTION_PLANS", () => {
     });
   });
 
-  it.each(PLANS_WITHOUT_VARIANT)("plan %s (Predictability-only) n'a pas de focusVariant", (id) => {
+  it.each(PLANS_WITHOUT_VARIANT)("plan %s (c_cap uniquement, Predictability-only) n'a pas de focusVariant", (id) => {
     const { focusVariant } = ACTION_PLANS[id].businessPitch;
     expect(focusVariant == null).toBe(true);
   });
