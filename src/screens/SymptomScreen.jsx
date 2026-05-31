@@ -25,9 +25,8 @@ export default function SymptomScreen({ onPick }) {
       <div className="screen-enter" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {SYMPTOMS.map((s) => (
           <button key={s.id} onClick={() => onPick(s, name.trim())}
-            style={{ ...btnReset, textAlign: "left", padding: "14px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.borderStrong)}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}>
+            className="btn-choice"
+            style={{ ...btnReset, textAlign: "left", padding: "14px 16px", borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <span style={{ fontWeight: 500 }}>{s.label}</span>
             <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted, flexShrink: 0 }}>→ {TREES[s.tree].label.toLowerCase()}</span>
           </button>

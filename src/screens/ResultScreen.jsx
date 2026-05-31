@@ -30,11 +30,7 @@ export default function ResultScreen({ symptom, tree, treeFocus, terminalId, pat
       <PathTrail path={path} />
       <div style={{ marginTop: 24 }}>
         {hasPlan ? (
-          <button onClick={onPlan} style={primaryBtn}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-            onMouseDown={(e) => { e.currentTarget.style.opacity = "0.7"; }}
-            onMouseUp={(e) => { e.currentTarget.style.opacity = "0.85"; }}>
+          <button onClick={onPlan} className="btn-primary" style={primaryBtn}>
             Voir le plan d'action →
           </button>
         ) : (

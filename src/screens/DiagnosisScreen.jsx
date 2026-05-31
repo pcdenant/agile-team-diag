@@ -19,9 +19,8 @@ export default function DiagnosisScreen({ symptom, tree, currentNodeId, currentN
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
         {currentNode.answers.map((a) => (
           <button key={a.next} onClick={() => onAnswer(a)}
-            style={{ ...btnReset, textAlign: "left", padding: "12px 16px", border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.borderStrong; e.currentTarget.style.background = "#f5f5f4"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>
+            className="btn-choice"
+            style={{ ...btnReset, textAlign: "left", padding: "12px 16px", borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
             <span>{a.label}</span>
           </button>
         ))}
