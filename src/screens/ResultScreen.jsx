@@ -24,7 +24,7 @@ export default function ResultScreen({ symptom, tree, treeFocus, terminalId, pat
             Sévérité · {sevMeta.label}
           </PillBadge>
           <PillBadge bg="#F1F5F9" color="#475569">
-            ○ {palier.label}
+            ○ {palier.pillLabel}
           </PillBadge>
           <PillBadge bg="#F5F3FF" color="#5B21B6">
             → {cause.owner}

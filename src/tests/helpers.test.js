@@ -67,6 +67,21 @@ describe("palierMeta", () => {
     const unique = new Set(colors);
     expect(unique.size).toBe(4);
   });
+
+  it("pillLabel suit le format 'Palier N — [shortLabel]' pour chaque palier", () => {
+    expect(palierMeta(1).pillLabel).toBe("Palier 1 — Collecter");
+    expect(palierMeta(2).pillLabel).toBe("Palier 2 — Quantifier");
+    expect(palierMeta(3).pillLabel).toBe("Palier 3 — Décider");
+    expect(palierMeta(0).pillLabel).toContain("Observation");
+  });
+
+  it("pillLabel est distinct du label long", () => {
+    [1, 2, 3].forEach((p) => {
+      const meta = palierMeta(p);
+      expect(meta.pillLabel).not.toBe(meta.label);
+      expect(meta.pillLabel.length).toBeLessThan(meta.label.length);
+    });
+  });
 });
 
 // --- lookupNode --------------------------------------------------------------
