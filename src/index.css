@@ -55,6 +55,12 @@ body { -webkit-font-smoothing: antialiased; }
   .screen-enter { animation: none; }
 }
 
+/* DiagnosisScreen — answer buttons: flex col → 2-col grid on desktop (≥4 answers) */
+.dx-answers { display: flex; flex-direction: column; gap: 8; }
+@media (min-width: 1024px) {
+  .dx-answers.dx-answers-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8; }
+}
+
 /* Interactive buttons — replaces inline onMouseEnter/Leave DOM manipulation */
 .btn-choice {
   border: 1.5px solid #e5e5e5;
