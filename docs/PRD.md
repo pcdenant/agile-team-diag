@@ -1,10 +1,9 @@
-# PRD — Team Dysfunction Diagnostic Tool v2.5
+# PRD — Team Dysfunction Diagnostic Tool v2.6
 
 **Marque** : Collaboration Solved  
 **Auteur** : Pierre-Cyril Denant  
-**Plateforme actuelle** : Artifact React (Claude)  
-**Cible future** : Web app standalone  
-**Version** : 2.5  
+**Plateforme actuelle** : Web app standalone (Vercel)  
+**Version** : 2.6.1  
 **Basé sur** : V1.0-refactored (2025-02-25)  
 **Statut** : Arbre Flow validé ✅ — Plans d'action implémentés ✅ (21/21)
 

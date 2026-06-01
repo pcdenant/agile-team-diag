@@ -3,52 +3,61 @@
 ## Stack
 
 - **Runtime** : React 18 + Vite (SPA, client-side uniquement)
-- **Styling** : Inline styles via shared `C`, `FONT`, `MONO` tokens (définis dans `App.jsx`)
+- **Styling** : Inline styles via shared `C`, `FONT`, `MONO` tokens (définis dans `src/theme.js`) + classes CSS interactives dans `index.css`
 - **State** : `useState` — pas de store externe
 - **Responsive** : breakpoint 768px
-- **Validation** : `validateTrees()` au chargement du module (console, non-bloquant)
+- **Validation** : `validateTrees()` dans `useEffect` au premier rendu — affiche un écran d'erreur si erreur détectée
 - **Tests** : Vitest + React Testing Library
 
 ## Structure des fichiers
 
 ```
 src/
-├── App.jsx              # UI, navigation, validation, helpers, export des tokens
+├── App.jsx              # Navigation state, rendu conditionnel, re-exports compat
 ├── main.jsx             # Entrée React
-├── constants.js         # STEPS, TREE_IDS (constantes nommées)
-├── index.css            # Reset minimal
+├── theme.js             # Tokens design : C, FONT, MONO, btnReset, linkBtn, primaryBtn
+├── constants.js         # STEPS, TREE_IDS, SEVERITY, TIMING
+├── index.css            # Reset + classes CSS interactives (.btn-choice, .btn-primary)
+├── utils/
+│   └── ui.jsx           # Badge, SectionTitle, severityLabel, severityColor, palierMeta
 ├── data/
 │   ├── causes.js        # CAUSES — 21 causes racine + exit_observe
 │   ├── actionPlans.js   # ACTION_PLANS — plans d'action (21/21)
 │   ├── symptoms.js      # SYMPTOMS — 4 symptômes
 │   └── trees.js         # SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES
 ├── components/
-│   ├── PlanHeader.jsx       # En-tête du plan (titre + nom équipe)
-│   ├── PlanMetrics.jsx      # Quadrant Impact/Objectif + Inspecter/Mesurer
+│   ├── Header.jsx            # En-tête statique de l'application
+│   ├── ContextStrip.jsx      # Barre symptôme + boutons navigation
+│   ├── PathTrail.jsx         # Historique du parcours diagnostic
+│   ├── PlanHeader.jsx        # En-tête du plan (titre + nom équipe)
+│   ├── PlanMetrics.jsx       # Quadrant Impact/Objectif + Inspecter/Mesurer
 │   ├── PlanBusinessPitch.jsx # Section pitch business
-│   └── PlanExperiments.jsx  # Section actions + expérimentations 48h
+│   └── PlanExperiments.jsx   # Section expérimentations 48h
+├── screens/
+│   ├── SymptomScreen.jsx     # Étape 1 : sélection du symptôme
+│   ├── DiagnosisScreen.jsx   # Étape 2 : arbre de diagnostic
+│   ├── ResultScreen.jsx      # Étape 3 : cause identifiée
+│   └── PlanScreen.jsx        # Étape 4 : plan d'action
 └── tests/
-    ├── App.test.jsx         # Tests d'intégration (navigation complète)
-    ├── data.test.js         # Validation des structures de données
-    ├── helpers.test.js      # Tests des fonctions utilitaires
-    └── setup.js             # Configuration Vitest globale
+    ├── App.test.jsx          # Tests d'intégration (navigation complète)
+    ├── data.test.js          # Validation des structures de données
+    ├── helpers.test.js       # Tests des fonctions utilitaires
+    └── setup.js              # Configuration Vitest globale
 ```
 
 ### Responsabilités de `App.jsx`
 
-`App.jsx` reste le point d'entrée principal mais ne contient plus les données statiques.
+`App.jsx` est réduit à ~164 lignes — navigation et state uniquement.
 
 ```
-┌─ RUNTIME VALIDATION ───────── validateTrees()
-├─ LOOKUP ───────────────────── lookupNode(treeId, nodeId)
-├─ STYLE TOKENS ─────────────── C, FONT, MONO, sectionHeaderStyle
-├─ HELPERS ──────────────────── severityLabel, severityColor, palierMeta
-├─ STEP COMPONENTS ──────────── SymptomScreen, DiagnosisScreen, ResultScreen, PlanScreen
-├─ SHARED UI ────────────────── Header, ContextStrip, SectionTitle, PathTrail, Badge
-└─ MAIN APP ─────────────────── App (state + navigation)
+┌─ RUNTIME VALIDATION ───── validateTrees() dans useEffect + état dataError
+├─ LOOKUP ────────────────── lookupNode(treeId, nodeId)
+├─ STATE + NAVIGATION ────── 6 useState, handlers (pickSymptom, answer, backOne, restart)
+├─ RENDU CONDITIONNEL ────── import + affichage des 4 screens selon step
+└─ RE-EXPORTS COMPAT ─────── CAUSES, TREES, severityLabel, C, etc. (pour les tests)
 ```
 
-Les tokens (`C`, `MONO`, `sectionHeaderStyle`, `Badge`, `SectionTitle`) sont exportés depuis `App.jsx` et consommés par les sous-composants de `src/components/`.
+Les tokens de style sont définis dans `src/theme.js` et `src/utils/ui.jsx`. `App.jsx` les ré-exporte pour la compatibilité des tests existants (`helpers.test.js` importe depuis `App.jsx`).
 
 ## Concepts clés
 
@@ -83,19 +92,16 @@ Si l'ID n'est résolu par aucune des trois étapes, `lookupNode()` retourne null
 
 ### validateTrees()
 
-Exécutée une fois au chargement du module, avant tout rendu React. Non bloquante.
+Exécutée dans un `useEffect` au premier rendu de `App`. Retourne un tableau d'erreurs (`string[]`).
+
+- Si vide → log console `[VALIDATION] ✓ N IDs valides · M nœuds vérifiés · 0 erreur`
+- Si non-vide → `dataError` state non-null → l'app affiche un écran d'erreur dédié à la place du contenu normal
 
 Vérifie :
 - Chaque `entry` des symptômes résout dans l'union de tous les IDs valides
 - Chaque `next:` de chaque réponse de chaque nœud (SHARED + PREDICTABILITY + TTM) résout dans l'union de tous les IDs valides
 
-Output :
-```
-[VALIDATION] ✓ N IDs valides · M nœuds vérifiés · 0 erreur
-[VALIDATION] Nœud "xxx" → next "yyy" introuvable   ← si erreur
-```
-
-Toute modification des données (ajout de nœud, modification de `next:`) est immédiatement détectée au prochain chargement.
+Toute modification des données (ajout de nœud, modification de `next:`) est détectée au prochain rendu.
 
 ### treeFocus dans le state
 
@@ -209,12 +215,11 @@ Champs supprimés vs V1 : `id` (redondant avec la clé de l'objet), `flagDepende
     }
   },
   experiments: {
-    action: string,       // action à mener
-    why: string,          // justification
-    whyNow: string,       // pourquoi maintenant
-    experiment: string,   // expérimentation 48h associée
-    observe: string,      // ce qu'on observe
-    confirm: string,      // critère de confirmation
+    label: string,        // titre de l'étape
+    timing: string,       // TIMING.THIS_WEEK | THIS_SPRINT | NEXT_SPRINT
+    description: string,  // action concrète à mener
+    criterion: string,    // critère de succès observable
+    gate: boolean,        // si true : l'étape suivante attend que celle-ci soit conclue
   }[]
 }
 ```
@@ -255,11 +260,11 @@ Procédure :
 |----------|--------|
 | Données dans `src/data/` | Séparation authoring/UI sans ajouter de couche d'abstraction. Chaque fichier a une seule responsabilité. |
 | `PlanScreen` découpé en 4 composants | Chaque quadrant du plan est indépendant. Les extraire réduit la taille de App.jsx et facilite les tests ciblés. |
-| Tokens exportés depuis App.jsx | Les sous-composants consomment les tokens via import nommé — pas de props drilling ni de Context pour des constantes de style. |
-| `src/constants.js` pour STEPS/TREE_IDS | Élimine les magic strings dispersés dans App.jsx. Un seul point de vérité pour les valeurs d'enum utilisées en navigation. |
-| Inline styles (pas de CSS framework) | Aucun build step supplémentaire, tokens centralisés, cohérence garantie par typage JS. |
+| Tokens dans `src/theme.js` + helpers dans `src/utils/ui.jsx` | Supprime les imports circulaires (enfants qui importaient depuis le parent `App.jsx`). App.jsx garde des re-exports pour la compatibilité des tests. |
+| `src/constants.js` pour STEPS/TREE_IDS/SEVERITY/TIMING | Élimine les magic strings dispersés. Un seul point de vérité pour les enums navigation, sévérité et timing. |
+| Inline styles + classes CSS interactives | Tokens centralisés en JS pour les styles statiques ; `:hover`/`:active`/`:focus-visible` en CSS — pas de manipulation DOM directe dans les handlers React. |
 | SHARED_NODES | Évite la duplication de la branche finish (identique dans les deux arbres). `lookupNode()` résout la priorité. |
-| `validateTrees()` au module level | S'exécute avant tout rendu React, sans useEffect. Les données sont statiques — une seule passe au chargement suffit. |
+| `validateTrees()` dans useEffect | S'exécute au premier rendu. En cas d'erreur, affiche un écran dédié au lieu de crasher silencieusement. Retourne `string[]` pour permettre l'affichage. |
 | `treeFocus` dans le state (pas dérivé de symptom) | Champ explicite persisté indépendamment de `symptom`, passé aux composants sans re-dériver à chaque render. |
 | Schéma Node uniforme `{label, next}[]` | Supprime la couche d'abstraction `type/answers` inutile — chaque réponse est une paire label+next. |
 | Causes contextuelles (Option A) | Le label doit être précis sans que le SM relise le chemin. Un label générique est inutilisable sur l'écran résultat. |
@@ -269,4 +274,4 @@ Procédure :
 | Pas de sélection de catégorie | Étape UI sans valeur diagnostique propre. Les symptômes routent directement vers leur arbre. |
 | `teamName` dans le state (pas persisté) | Champ optionnel affiché dans le parcours. La persistence entre sessions est reportée à V4. |
 
-*Updated: 2026-05-08*
+*Updated: 2026-06-01*
