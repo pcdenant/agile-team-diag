@@ -19,6 +19,42 @@ body { -webkit-font-smoothing: antialiased; }
 .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 640px) { .plan-grid { grid-template-columns: 1fr; } }
 
+/* Bento grid — mobile-first, 1→2→4 columns */
+.bento-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .bento-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .bento-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Bento card */
+.bento-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Bento span helpers */
+.bento-span-full { grid-column: 1 / -1; }
+@media (min-width: 640px) {
+  .bento-span-2 { grid-column: span 2; }
+  .bento-span-3 { grid-column: span 2; }
+}
+@media (min-width: 1024px) {
+  .bento-span-3 { grid-column: span 3; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .screen-enter { animation: none; }
+}
+
 /* Interactive buttons — replaces inline onMouseEnter/Leave DOM manipulation */
 .btn-choice {
   border: 1.5px solid #e5e5e5;

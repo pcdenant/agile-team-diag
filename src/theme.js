@@ -1,8 +1,15 @@
 export const FONT = "ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 export const MONO = "ui-monospace, 'SF Mono', Menlo, monospace";
 
+export const CARD = {
+  radius: 16,
+  padding: 20,
+  shadow: "0 1px 4px rgba(0,0,0,0.06)",
+  bg: "#FFFFFF",
+};
+
 export const C = {
-  bg: "#fafaf9", surface: "#ffffff", text: "#171717", muted: "#737373",
+  bg: "#F5F5F7", surface: "#ffffff", text: "#1D1D1F", muted: "#737373",
   textSub: "#525252",
   border: "#e5e5e5", borderStrong: "#404040", ink: "#0a0a0a",
   high: "#b91c1c", med: "#b45309", low: "#737373",
