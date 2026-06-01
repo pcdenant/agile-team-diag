@@ -15,31 +15,37 @@ export default function ResultScreen({ symptom, tree, treeFocus, terminalId, pat
   return (
     <div className="screen-enter">
       <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Modifier dernière réponse" />
-      <SectionTitle n={String(path.length + 2).padStart(2, "0")} label="Cause identifiée" />
-      <div style={{ border: `1px solid ${C.border}`, borderLeft: `3px solid ${sev}`, background: C.surface, padding: "18px 20px", borderRadius: 6, marginBottom: 20 }}>
-        <div style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 10 }}>{cause.label}</div>
-        <div style={{ fontSize: 14, color: C.text, lineHeight: 1.55, marginBottom: 14 }}>{cause.description}</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          <PillBadge bg={sevMeta.bg} color={sevMeta.color}>
-            Sévérité · {sevMeta.label}
-          </PillBadge>
-          <PillBadge bg="#F1F5F9" color="#475569">
-            ○ {palier.pillLabel}
-          </PillBadge>
-          <PillBadge bg="#F5F3FF" color="#5B21B6">
-            → {cause.owner}
-          </PillBadge>
+      <div className="bento-grid">
+        <div className="rs-cause-action bento-span-full">
+          <div className="bento-card" style={{ borderLeft: `3px solid ${sev}` }}>
+            <SectionTitle n={String(path.length + 2).padStart(2, "0")} label="Cause identifiée" />
+            <div style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 10 }}>{cause.label}</div>
+            <div style={{ fontSize: 14, color: C.text, lineHeight: 1.55 }}>{cause.description}</div>
+          </div>
+          <div className="bento-card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              <PillBadge bg={sevMeta.bg} color={sevMeta.color}>
+                Sévérité · {sevMeta.label}
+              </PillBadge>
+              <PillBadge bg="#F1F5F9" color="#475569">
+                ○ {palier.pillLabel}
+              </PillBadge>
+              <PillBadge bg="#F5F3FF" color="#5B21B6">
+                → {cause.owner}
+              </PillBadge>
+            </div>
+            {hasPlan ? (
+              <button onClick={onPlan} className="btn-primary" style={{ ...primaryBtn, width: "100%" }}>
+                Voir le plan d'action →
+              </button>
+            ) : (
+              <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>Plan d'action — à implémenter.</div>
+            )}
+          </div>
         </div>
-      </div>
-      <PathTrail path={path} />
-      <div style={{ marginTop: 24 }}>
-        {hasPlan ? (
-          <button onClick={onPlan} className="btn-primary" style={primaryBtn}>
-            Voir le plan d'action →
-          </button>
-        ) : (
-          <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>Plan d'action — à implémenter.</div>
-        )}
+        <div className="bento-card bento-span-full">
+          <PathTrail path={path} flat />
+        </div>
       </div>
     </div>
   );
