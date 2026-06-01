@@ -55,6 +55,11 @@ body { -webkit-font-smoothing: antialiased; }
   .screen-enter { animation: none; }
 }
 
+/* ExitObserveScreen — question cards: 1→2→3 colonnes */
+.eo-questions-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .eo-questions-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .eo-questions-grid { grid-template-columns: repeat(3, 1fr); } }
+
 /* ResultScreen — cause card + action card côte-à-côte sur desktop */
 .rs-cause-action { display: grid; gap: 16px; grid-template-columns: 1fr; }
 @media (min-width: 1024px) { .rs-cause-action { grid-template-columns: 3fr 1fr; } }
