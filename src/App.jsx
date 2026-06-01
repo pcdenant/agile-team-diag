@@ -11,6 +11,7 @@ import ContextStrip from "./components/ContextStrip.jsx";
 import PathTrail from "./components/PathTrail.jsx";
 import SymptomScreen from "./screens/SymptomScreen.jsx";
 import DiagnosisScreen from "./screens/DiagnosisScreen.jsx";
+import ExitObserveScreen from "./screens/ExitObserveScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
 import PlanScreen from "./screens/PlanScreen.jsx";
 
@@ -149,7 +150,10 @@ export default function App() {
         {step === STEPS.DIAGNOSIS && symptom && currentNode && (
           <DiagnosisScreen symptom={symptom} tree={tree} currentNodeId={currentNodeId} currentNode={currentNode} path={path} onAnswer={answer} onBack={backOne} onRestart={restart} />
         )}
-        {step === STEPS.RESULT && terminalId && CAUSES[terminalId] && (
+        {step === STEPS.RESULT && terminalId === "exit_observe" && (
+          <ExitObserveScreen symptom={symptom} tree={tree} path={path} onBack={backOne} onRestart={restart} />
+        )}
+        {step === STEPS.RESULT && terminalId && terminalId !== "exit_observe" && CAUSES[terminalId] && (
           <ResultScreen symptom={symptom} tree={tree} treeFocus={treeFocus} terminalId={terminalId} path={path} onBack={backOne} onRestart={restart} onPlan={showPlan} />
         )}
         {step === STEPS.PLAN && terminalId && CAUSES[terminalId] && ACTION_PLANS[terminalId] && (

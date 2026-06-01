@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { severityLabel, severityColor, palierMeta, lookupNode } from "../App.jsx";
+import { C } from "../theme.js";
 
 // --- severityLabel -----------------------------------------------------------
 
@@ -122,5 +123,52 @@ describe("lookupNode", () => {
       expect(a).toHaveProperty("label");
       expect(a).toHaveProperty("next");
     });
+  });
+});
+
+// --- tokens couleur (Decision 5 — UX specs rev.9) ----------------------------
+
+describe("tokens couleur — hint-info", () => {
+  it("exporte les 3 clés hintInfo avec des valeurs string non vides", () => {
+    ["hintInfoBg", "hintInfoBorder", "hintInfoColor"].forEach((key) => {
+      expect(typeof C[key]).toBe("string");
+      expect(C[key].length).toBeGreaterThan(0);
+    });
+  });
+
+  it("n'exporte plus les anciens tokens jaunes génériques", () => {
+    expect(C.hintBg).toBeUndefined();
+    expect(C.hintBorder).toBeUndefined();
+    expect(C.hintText).toBeUndefined();
+  });
+});
+
+describe("tokens couleur — cost-alert", () => {
+  it("exporte les 3 clés costAlert avec des valeurs string non vides", () => {
+    ["costAlertBg", "costAlertBorder", "costAlertColor"].forEach((key) => {
+      expect(typeof C[key]).toBe("string");
+      expect(C[key].length).toBeGreaterThan(0);
+    });
+  });
+
+  it("costAlertColor est plus sombre que hintInfoColor (ambre foncé vs bleu)", () => {
+    // Les deux sont des hex — vérification minimale de différenciation
+    expect(C.costAlertColor).not.toBe(C.hintInfoColor);
+    expect(C.costAlertBg).not.toBe(C.hintInfoBg);
+  });
+});
+
+describe("tokens couleur — context-warm", () => {
+  it("exporte les 3 clés contextWarm avec des valeurs string non vides", () => {
+    ["contextWarmBg", "contextWarmBorder", "contextWarmColor"].forEach((key) => {
+      expect(typeof C[key]).toBe("string");
+      expect(C[key].length).toBeGreaterThan(0);
+    });
+  });
+
+  it("les 3 tokens ont des backgrounds distincts", () => {
+    expect(C.hintInfoBg).not.toBe(C.costAlertBg);
+    expect(C.costAlertBg).not.toBe(C.contextWarmBg);
+    expect(C.hintInfoBg).not.toBe(C.contextWarmBg);
   });
 });

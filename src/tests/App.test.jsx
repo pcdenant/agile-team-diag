@@ -34,6 +34,23 @@ describe("SymptomScreen (étape initiale)", () => {
     render(<App />);
     expect(screen.getByPlaceholderText(/Team Phoenix/i)).toBeInTheDocument();
   });
+
+  it("affiche la ligne d'ancrage (#1)", () => {
+    render(<App />);
+    expect(screen.getByText(/En 5 questions, tu identifies la cause réelle/)).toBeInTheDocument();
+  });
+
+  it("affiche les 2 headers de groupes (#2)", () => {
+    render(<App />);
+    expect(screen.getByText("Engagements & dates")).toBeInTheDocument();
+    expect(screen.getByText("Flux & avancement")).toBeInTheDocument();
+  });
+
+  it("affiche les hints de groupes (#2)", () => {
+    render(<App />);
+    expect(screen.getByText(/Ce que l'équipe a promis ne se réalise pas/)).toBeInTheDocument();
+    expect(screen.getByText(/Le travail ne circule pas/)).toBeInTheDocument();
+  });
 });
 
 // --- DiagnosisScreen ---------------------------------------------------------
@@ -72,6 +89,34 @@ describe("DiagnosisScreen (navigation)", () => {
     // On revient sur finish_state
     expect(screen.getByText(/Ce travail est-il bloqué/)).toBeInTheDocument();
   });
+
+  it("affiche l'indicateur de durée sur la Q1 uniquement (#3)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+    expect(screen.getByText(/3 à 6 questions selon ton contexte/)).toBeInTheDocument();
+    // Q2 — l'indicateur disparaît
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    expect(screen.queryByText(/3 à 6 questions selon ton contexte/)).not.toBeInTheDocument();
+  });
+
+  it("le lien restart est absent sur Q1, visible sur Q2+ (#4)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+    expect(screen.queryByRole("button", { name: /Recommencer le diagnostic/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    expect(screen.getByRole("button", { name: /Recommencer le diagnostic/ })).toBeInTheDocument();
+  });
+
+  it("le lien restart ramène à SymptomScreen (#4)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    await user.click(screen.getByRole("button", { name: /Recommencer le diagnostic/ }));
+    expect(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ })).toBeInTheDocument();
+  });
 });
 
 // --- ResultScreen + bouton CTA ----------------------------------------------
@@ -87,27 +132,63 @@ describe("ResultScreen — c_tech via s4 (TTM)", () => {
     expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
   });
 
-  it("affiche les badges sévérité, palier, propriétaire et focus arbre", async () => {
+  it("affiche les 3 pill badges sévérité, palier, propriétaire (#6)", async () => {
     const user = userEvent.setup();
     render(<App />);
     await navigateTo_s4_finish_blocked_internal(user);
     await user.click(screen.getByRole("button", { name: /Un système \/ outil \/ environnement ne fonctionne pas/ }));
 
-    expect(screen.getByText(/Sévérité : Critique/)).toBeInTheDocument();
+    expect(screen.getByText(/Sévérité · Critique/)).toBeInTheDocument();
     expect(screen.getByText(/Palier 1/)).toBeInTheDocument();
-    expect(screen.getByText(/Équipe \+ Ops\/Infra/)).toBeInTheDocument();
+    expect(screen.getByText(/Ops\/Infra/)).toBeInTheDocument();
+    // Focus arbre supprimé de l'affichage (Décision 6)
+    expect(screen.queryByText(/Focus arbre/)).not.toBeInTheDocument();
   });
 });
 
-describe("ResultScreen — cause sans plan (exit_observe)", () => {
-  it("n'affiche PAS le bouton plan d'action", async () => {
-    const user = userEvent.setup();
-    render(<App />);
+describe("ExitObserveScreen — Décision #7", () => {
+  async function goToExitObserve(user) {
     await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
     await user.click(screen.getByRole("button", { name: /Je ne sais pas/ }));
+  }
 
+  it("affiche l'écran dédié avec le titre correct", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    expect(screen.getByText(/Données insuffisantes pour conclure/)).toBeInTheDocument();
+  });
+
+  it("n'affiche pas le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
     expect(screen.queryByRole("button", { name: /Voir le plan d'action/ })).not.toBeInTheDocument();
-    expect(screen.getByText(/Plan d'action — à implémenter\./)).toBeInTheDocument();
+  });
+
+  it("affiche les 5 questions de rétro", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    expect(screen.getByText(/Est-ce qu'on a livré tout ce qu'on avait planifié/)).toBeInTheDocument();
+    expect(screen.getByText(/Combien d'items en cours en ce moment sur le board/)).toBeInTheDocument();
+  });
+
+  it("le CTA 'Recommencer avec les données' retourne à SymptomScreen", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    await user.click(screen.getByRole("button", { name: /Recommencer avec les données/ }));
+    expect(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ })).toBeInTheDocument();
+  });
+
+  it("'← Retour au diagnostic' retourne à la dernière question", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    await user.click(screen.getByRole("button", { name: /← Retour au diagnostic/ }));
+    // Retourne sur finish_state (la première question de s4)
+    expect(screen.getByText(/Ce travail est-il bloqué/)).toBeInTheDocument();
   });
 });
 
@@ -1038,8 +1119,10 @@ describe("teamName", () => {
     render(<App />);
 
     await user.type(screen.getByPlaceholderText(/Team Phoenix/i), "Team Alpha");
+    // Naviguer jusqu'à la Q2 — le lien restart apparaît à path.length >= 1
     await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
-    await user.click(screen.getByRole("button", { name: /Recommencer depuis le début/ }));
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    await user.click(screen.getByRole("button", { name: /Recommencer le diagnostic/ }));
 
     // Le champ réapparaît vide (SymptomScreen re-monte avec state local frais)
     expect(screen.getByPlaceholderText(/Team Phoenix/i)).toHaveValue("");

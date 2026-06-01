@@ -1,9 +1,8 @@
 import React from "react";
 import { CAUSES } from "../data/causes.js";
 import { ACTION_PLANS } from "../data/actionPlans.js";
-import { TREES } from "../data/trees.js";
 import { C, primaryBtn } from "../theme.js";
-import { severityLabel, severityColor, palierMeta, Badge, SectionTitle } from "../utils/ui.jsx";
+import { severityColor, palierMeta, severityPillMeta, PillBadge, SectionTitle } from "../utils/ui.jsx";
 import ContextStrip from "../components/ContextStrip.jsx";
 import PathTrail from "../components/PathTrail.jsx";
 
@@ -11,7 +10,7 @@ export default function ResultScreen({ symptom, tree, treeFocus, terminalId, pat
   const cause = CAUSES[terminalId];
   const sev = severityColor(cause.severity);
   const palier = palierMeta(cause.palier);
-  const focusLabel = treeFocus ? TREES[treeFocus].label : tree.label;
+  const sevMeta = severityPillMeta(cause.severity);
   const hasPlan = Boolean(ACTION_PLANS[terminalId]);
   return (
     <div className="screen-enter">
@@ -21,10 +20,15 @@ export default function ResultScreen({ symptom, tree, treeFocus, terminalId, pat
         <div style={{ fontSize: 18, fontWeight: 600, color: C.ink, marginBottom: 10 }}>{cause.label}</div>
         <div style={{ fontSize: 14, color: C.text, lineHeight: 1.55, marginBottom: 14 }}>{cause.description}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          <Badge color={sev}>Sévérité : {severityLabel(cause.severity)}</Badge>
-          <Badge color={palier.color}>{palier.label}</Badge>
-          <Badge color={C.borderStrong}>Propriétaire : {cause.owner}</Badge>
-          <Badge color={C.muted}>Focus arbre : {focusLabel}</Badge>
+          <PillBadge bg={sevMeta.bg} color={sevMeta.color}>
+            Sévérité · {sevMeta.label}
+          </PillBadge>
+          <PillBadge bg="#F1F5F9" color="#475569">
+            ○ {palier.label}
+          </PillBadge>
+          <PillBadge bg="#F5F3FF" color="#5B21B6">
+            → {cause.owner}
+          </PillBadge>
         </div>
       </div>
       <PathTrail path={path} />

@@ -7,8 +7,8 @@ export default function PlanMetrics({ plan, cause, sev }) {
     <div className="plan-grid" style={{ marginBottom: 20, alignItems: "start" }}>
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
         <div style={sectionHeaderStyle}>Impact · Objectif</div>
-        <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, borderRadius: 4, padding: "10px 12px", marginBottom: 10 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: C.hintText, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>Ce que ça coûte</div>
+        <div style={{ background: C.costAlertBg, border: `1.5px solid ${C.costAlertBorder}`, borderRadius: 4, padding: "10px 12px", marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.costAlertColor, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>⚠ Ce que ça coûte</div>
           <div style={{ fontFamily: MONO, fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{plan.cost}</div>
         </div>
         {plan.costHint ? <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5, marginBottom: 14 }}>{plan.costHint}</div> : null}
