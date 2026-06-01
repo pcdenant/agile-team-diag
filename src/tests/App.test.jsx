@@ -132,15 +132,17 @@ describe("ResultScreen — c_tech via s4 (TTM)", () => {
     expect(screen.getByRole("button", { name: /Voir le plan d'action →/ })).toBeInTheDocument();
   });
 
-  it("affiche les badges sévérité, palier, propriétaire et focus arbre", async () => {
+  it("affiche les 3 pill badges sévérité, palier, propriétaire (#6)", async () => {
     const user = userEvent.setup();
     render(<App />);
     await navigateTo_s4_finish_blocked_internal(user);
     await user.click(screen.getByRole("button", { name: /Un système \/ outil \/ environnement ne fonctionne pas/ }));
 
-    expect(screen.getByText(/Sévérité : Critique/)).toBeInTheDocument();
+    expect(screen.getByText(/Sévérité · Critique/)).toBeInTheDocument();
     expect(screen.getByText(/Palier 1/)).toBeInTheDocument();
-    expect(screen.getByText(/Équipe \+ Ops\/Infra/)).toBeInTheDocument();
+    expect(screen.getByText(/Ops\/Infra/)).toBeInTheDocument();
+    // Focus arbre supprimé de l'affichage (Décision 6)
+    expect(screen.queryByText(/Focus arbre/)).not.toBeInTheDocument();
   });
 });
 
