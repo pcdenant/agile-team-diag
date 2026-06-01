@@ -14,6 +14,11 @@ export default function PlanExperiments({ experiments }) {
                 <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{exp.label}</span>
                 <Badge color={C.muted}>{exp.timing}</Badge>
               </div>
+              {exp.context && (
+                <div style={{ background: C.contextWarmBg, border: `1px solid ${C.contextWarmBorder}`, color: C.contextWarmColor, fontSize: 12, padding: "7px 10px", borderRadius: 4, marginBottom: 8, lineHeight: 1.45 }}>
+                  {exp.context}
+                </div>
+              )}
               <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>{exp.description}</div>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 6, fontSize: 12, color: "#166534", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 4, padding: "8px 10px" }}>
                 <span style={{ fontWeight: 700, flexShrink: 0 }}>✓</span>

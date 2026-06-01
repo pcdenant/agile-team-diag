@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 import App from "../App.jsx";
+import PlanExperiments from "../components/PlanExperiments.jsx";
 
 // Chemins de réponses pour atteindre c_tech et c_gate via s4 (TTM, finish_state)
 // s4 → finish_state → finish_blocked_nature → p_internal_nature_finish → c_tech|c_gate
@@ -139,7 +140,9 @@ describe("ResultScreen — c_tech via s4 (TTM)", () => {
     await user.click(screen.getByRole("button", { name: /Un système \/ outil \/ environnement ne fonctionne pas/ }));
 
     expect(screen.getByText(/Sévérité · Critique/)).toBeInTheDocument();
-    expect(screen.getByText(/Palier 1/)).toBeInTheDocument();
+    // Format court spec : "Palier N — [shortLabel]" (pas le label long)
+    expect(screen.getByText(/Palier 1 — Collecter/)).toBeInTheDocument();
+    expect(screen.queryByText(/Données à collecter/)).not.toBeInTheDocument();
     expect(screen.getByText(/Ops\/Infra/)).toBeInTheDocument();
     // Focus arbre supprimé de l'affichage (Décision 6)
     expect(screen.queryByText(/Focus arbre/)).not.toBeInTheDocument();
@@ -1402,6 +1405,34 @@ describe("ResultScreen + PlanScreen — c_dor", () => {
 });
 
 // --- c_anticipation -------------------------------------------------------
+
+// --- PlanExperiments — context-warm (Décision 5 gap) -------------------------
+
+describe("PlanExperiments — rendu context-warm", () => {
+  const BASE_EXP = {
+    label: "Étape 1 — Test",
+    timing: "CETTE SEMAINE",
+    description: "Description de l'expérimentation.",
+    criterion: "Critère de succès mesuré.",
+    gate: false,
+  };
+
+  it("affiche l'encart context-warm si exp.context est présent", () => {
+    render(<PlanExperiments experiments={[{ ...BASE_EXP, context: "Pourquoi maintenant : le cycle time dépasse les 5 jours." }]} />);
+    expect(screen.getByText(/Pourquoi maintenant/)).toBeInTheDocument();
+  });
+
+  it("n'affiche pas d'encart context si exp.context est absent", () => {
+    render(<PlanExperiments experiments={[BASE_EXP]} />);
+    expect(screen.queryByText(/Pourquoi maintenant/)).not.toBeInTheDocument();
+  });
+
+  it("le contenu et le critère de succès sont toujours rendus", () => {
+    render(<PlanExperiments experiments={[BASE_EXP]} />);
+    expect(screen.getByText(/Description de l'expérimentation/)).toBeInTheDocument();
+    expect(screen.getByText(/Critère de succès mesuré/)).toBeInTheDocument();
+  });
+});
 
 describe("ResultScreen + PlanScreen — c_anticipation via s4", () => {
   async function goToResult(user) {

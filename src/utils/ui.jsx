@@ -7,10 +7,10 @@ export { C, MONO, sectionHeaderStyle } from "../theme.js";
 export function severityLabel(s) { return s === SEVERITY.HIGH ? "Critique" : s === SEVERITY.MEDIUM ? "Modéré" : "Faible"; }
 export function severityColor(s) { return s === SEVERITY.HIGH ? C.high : s === SEVERITY.MEDIUM ? C.med : C.low; }
 export function palierMeta(p) {
-  if (p === 1) return { label: "Palier 1 — Données à collecter", shortLabel: "Collecter", color: C.palier1 };
-  if (p === 2) return { label: "Palier 2 — Impact à quantifier", shortLabel: "Quantifier", color: C.palier2 };
-  if (p === 3) return { label: "Palier 3 — Décision à déclencher", shortLabel: "Décider", color: C.palier3 };
-  return { label: "Hors palier — Observation requise", shortLabel: "Observation requise", color: C.palierObs };
+  if (p === 1) return { label: "Palier 1 — Données à collecter", shortLabel: "Collecter", pillLabel: "Palier 1 — Collecter", color: C.palier1 };
+  if (p === 2) return { label: "Palier 2 — Impact à quantifier", shortLabel: "Quantifier", pillLabel: "Palier 2 — Quantifier", color: C.palier2 };
+  if (p === 3) return { label: "Palier 3 — Décision à déclencher", shortLabel: "Décider", pillLabel: "Palier 3 — Décider", color: C.palier3 };
+  return { label: "Hors palier — Observation requise", shortLabel: "Observation requise", pillLabel: "Palier 0 — Observation requise", color: C.palierObs };
 }
 
 /** Palette pour les pill badges de sévérité (ResultScreen). */
