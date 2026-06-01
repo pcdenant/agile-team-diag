@@ -4,6 +4,47 @@ Format : [Conventional Commits](https://www.conventionalcommits.org/). Versions 
 
 ---
 
+## [2.7.1] — 2026-06-01 — UX rev. 9 — gaps post-audit (PR #26)
+
+### Fix
+- Badge palier dans `ResultScreen` : affiche désormais le format court spec "Palier N — [shortLabel]" (ex. "Palier 1 — Collecter") et non le label long "Palier 1 — Données à collecter"
+- `palierMeta()` enrichi du champ `pillLabel` — additionnel, aucune régression sur `label` et `color`
+
+### Feat
+- `PlanExperiments` : rendu conditionnel d'un encart `context-warm` (ambre léger) si `exp.context` est fourni — infrastructure prête pour l'authoring éditorial du champ "Pourquoi maintenant"
+
+### Test
+- Test de non-régression sur `pillLabel` dans `helpers.test.js`
+- 3 tests unitaires directs sur `PlanExperiments` avec données mock (présence / absence de `exp.context`)
+- Test badge ResultScreen assertant le format court ET l'absence du label long
+
+---
+
+## [2.7.0] — 2026-06-01 — UX specs rev. 9 — 7 décisions (PR #25)
+
+### Feat
+- **SymptomScreen** : ligne d'ancrage statique ("En 5 questions, tu identifies…") sous le titre
+- **SymptomScreen** : groupement des 4 symptômes en 2 paires avec code couleur (bleu Engagements / ambre Flux), headers de groupe + hints de différenciation, hover couleur groupe via CSS classes
+- **ContextStrip** : dot coloré (● bleu ou ambre) propagé depuis `symptom.tree` pour maintenir le contexte visuel en diagnostic
+- **DiagnosisScreen** : indicateur de durée statique ("3 à 6 questions — environ 3 minutes") affiché sur la Q1 uniquement
+- **DiagnosisScreen** : lien "Recommencer le diagnostic" (rouge, `#C94040`) dans le footer, visible à partir de la Q2 (`path.length >= 1`) — remplace le "↻ Recommencer" toujours visible en haut
+- **ResultScreen** : 3 `PillBadge` (Sévérité · Palier · Propriétaire) — badge "Focus arbre" supprimé de l'affichage (`treeFocus` conservé dans le state pour `focusVariant`)
+- **ExitObserveScreen** : nouvel écran dédié pour `exit_observe` (palier 0) — titre, 2 pill badges, 5 questions de rétro numérotées, encart hint-info, footer distinct — PlanScreen inaccessible depuis cette sortie
+
+### Style system
+- Remplacement du token jaune générique (`hintBg/hintBorder/hintText`) par 3 tokens sémantiques :
+  - `hint-info` (bleu `#EBF3FF`) : hints diagnostiques — icône 💡
+  - `cost-alert` (ambre foncé `#FFF0CC`) : encart coût PlanMetrics — icône ⚠, border 1.5px
+  - `context-warm` (ambre léger `#FFF8EC`) : contexte actionnable dans les expérimentations
+- Nouveau composant `PillBadge` dans `src/utils/ui.jsx` (DM Mono, uppercase, borderRadius 20, fond coloré)
+- Nouvelle fonction `severityPillMeta()` avec palette sémantique par sévérité
+
+### Test
+- 16 tests de non-régression ajoutés (tokens couleur, ancrage, groupement, durée, restart conditionnel, ExitObserveScreen, badges pill)
+- Tests existants mis à jour pour refléter les nouvelles interactions (restart depuis Q2, format badges)
+
+---
+
 ## [2.6.1] — 2026-06-01 — Qualité de code P2 (PRs #21, #22, #23)
 
 ### Fix
