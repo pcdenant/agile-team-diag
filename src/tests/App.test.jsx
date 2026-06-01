@@ -89,6 +89,34 @@ describe("DiagnosisScreen (navigation)", () => {
     // On revient sur finish_state
     expect(screen.getByText(/Ce travail est-il bloqué/)).toBeInTheDocument();
   });
+
+  it("affiche l'indicateur de durée sur la Q1 uniquement (#3)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+    expect(screen.getByText(/3 à 6 questions selon ton contexte/)).toBeInTheDocument();
+    // Q2 — l'indicateur disparaît
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    expect(screen.queryByText(/3 à 6 questions selon ton contexte/)).not.toBeInTheDocument();
+  });
+
+  it("le lien restart est absent sur Q1, visible sur Q2+ (#4)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+    expect(screen.queryByRole("button", { name: /Recommencer le diagnostic/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    expect(screen.getByRole("button", { name: /Recommencer le diagnostic/ })).toBeInTheDocument();
+  });
+
+  it("le lien restart ramène à SymptomScreen (#4)", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    await user.click(screen.getByRole("button", { name: /Recommencer le diagnostic/ }));
+    expect(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ })).toBeInTheDocument();
+  });
 });
 
 // --- ResultScreen + bouton CTA ----------------------------------------------
@@ -1055,8 +1083,10 @@ describe("teamName", () => {
     render(<App />);
 
     await user.type(screen.getByPlaceholderText(/Team Phoenix/i), "Team Alpha");
+    // Naviguer jusqu'à la Q2 — le lien restart apparaît à path.length >= 1
     await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
-    await user.click(screen.getByRole("button", { name: /Recommencer depuis le début/ }));
+    await user.click(screen.getByRole("button", { name: /Bloqué — hard stop/ }));
+    await user.click(screen.getByRole("button", { name: /Recommencer le diagnostic/ }));
 
     // Le champ réapparaît vide (SymptomScreen re-monte avec state local frais)
     expect(screen.getByPlaceholderText(/Team Phoenix/i)).toHaveValue("");
