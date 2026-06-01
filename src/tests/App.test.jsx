@@ -146,15 +146,49 @@ describe("ResultScreen — c_tech via s4 (TTM)", () => {
   });
 });
 
-describe("ResultScreen — cause sans plan (exit_observe)", () => {
-  it("n'affiche PAS le bouton plan d'action", async () => {
-    const user = userEvent.setup();
-    render(<App />);
+describe("ExitObserveScreen — Décision #7", () => {
+  async function goToExitObserve(user) {
     await user.click(screen.getByRole("button", { name: /Beaucoup de travail démarre mais ne sort pas/ }));
     await user.click(screen.getByRole("button", { name: /Je ne sais pas/ }));
+  }
 
+  it("affiche l'écran dédié avec le titre correct", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    expect(screen.getByText(/Données insuffisantes pour conclure/)).toBeInTheDocument();
+  });
+
+  it("n'affiche pas le bouton plan d'action", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
     expect(screen.queryByRole("button", { name: /Voir le plan d'action/ })).not.toBeInTheDocument();
-    expect(screen.getByText(/Plan d'action — à implémenter\./)).toBeInTheDocument();
+  });
+
+  it("affiche les 5 questions de rétro", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    expect(screen.getByText(/Est-ce qu'on a livré tout ce qu'on avait planifié/)).toBeInTheDocument();
+    expect(screen.getByText(/Combien d'items en cours en ce moment sur le board/)).toBeInTheDocument();
+  });
+
+  it("le CTA 'Recommencer avec les données' retourne à SymptomScreen", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    await user.click(screen.getByRole("button", { name: /Recommencer avec les données/ }));
+    expect(screen.getByRole("button", { name: /Le sprint commitment n'est pas tenu/ })).toBeInTheDocument();
+  });
+
+  it("'← Retour au diagnostic' retourne à la dernière question", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await goToExitObserve(user);
+    await user.click(screen.getByRole("button", { name: /← Retour au diagnostic/ }));
+    // Retourne sur finish_state (la première question de s4)
+    expect(screen.getByText(/Ce travail est-il bloqué/)).toBeInTheDocument();
   });
 });
 
