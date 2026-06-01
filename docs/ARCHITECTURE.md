@@ -19,7 +19,8 @@ src/
 ├── constants.js         # STEPS, TREE_IDS, SEVERITY, TIMING
 ├── index.css            # Reset + classes CSS interactives (.btn-choice, .btn-primary)
 ├── utils/
-│   └── ui.jsx           # Badge, SectionTitle, severityLabel, severityColor, palierMeta
+│   └── ui.jsx           # Badge, PillBadge, SectionTitle, severityLabel, severityColor,
+│                        #   palierMeta (label/shortLabel/pillLabel/color), severityPillMeta
 ├── data/
 │   ├── causes.js        # CAUSES — 21 causes racine + exit_observe
 │   ├── actionPlans.js   # ACTION_PLANS — plans d'action (21/21)
@@ -27,16 +28,17 @@ src/
 │   └── trees.js         # SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES
 ├── components/
 │   ├── Header.jsx            # En-tête statique de l'application
-│   ├── ContextStrip.jsx      # Barre symptôme + boutons navigation
+│   ├── ContextStrip.jsx      # Barre contexte (dot couleur groupe) — prop showButtons
 │   ├── PathTrail.jsx         # Historique du parcours diagnostic
 │   ├── PlanHeader.jsx        # En-tête du plan (titre + nom équipe)
 │   ├── PlanMetrics.jsx       # Quadrant Impact/Objectif + Inspecter/Mesurer
 │   ├── PlanBusinessPitch.jsx # Section pitch business
 │   └── PlanExperiments.jsx   # Section expérimentations 48h
 ├── screens/
-│   ├── SymptomScreen.jsx     # Étape 1 : sélection du symptôme
-│   ├── DiagnosisScreen.jsx   # Étape 2 : arbre de diagnostic
-│   ├── ResultScreen.jsx      # Étape 3 : cause identifiée
+│   ├── SymptomScreen.jsx     # Étape 1 : sélection du symptôme (groupement 2 paires)
+│   ├── DiagnosisScreen.jsx   # Étape 2 : arbre de diagnostic (hints hint-info, footer restart)
+│   ├── ResultScreen.jsx      # Étape 3 : cause identifiée (3 PillBadge)
+│   ├── ExitObserveScreen.jsx # Sortie palier 0 : 5 questions rétro, pas de plan
 │   └── PlanScreen.jsx        # Étape 4 : plan d'action
 └── tests/
     ├── App.test.jsx          # Tests d'intégration (navigation complète)
@@ -111,7 +113,7 @@ treeFocus: "predictability" | "time_to_market" | null
 
 - Alimenté dans `pickSymptom(s)` → `setTreeFocus(s.tree)`
 - Remis à null dans `restart()`. Si `path` est vide après un `backOne()`, l'app retourne à `SymptomScreen` et remet `treeFocus` à null — cette condition est vérifiée dans `App` après chaque pop, pas dans `backOne()` elle-même.
-- Passé à `ResultScreen` et `PlanScreen` pour sourcer le badge "Focus arbre" et moduler les plans d'action
+- Passé à `ResultScreen` et `PlanScreen` pour moduler les plans d'action (`focusVariant`) — le badge "Focus arbre" a été supprimé de l'affichage utilisateur (UX rev. 9, décision #6) mais `treeFocus` reste dans le state
 - Prérequis pour la modulation des plans d'action sur les causes partagées entre les deux arbres (ex. `c_urgency_misalign` accessible depuis les deux — le libellé du plan d'action différera selon le focus)
 
 ### teamName dans le state
@@ -143,7 +145,7 @@ teamName: string | null
 ```typescript
 {
   question: string,
-  hint?: string,     // indice contextuel — affiché sous la question, fond jaune
+  hint?: string,     // indice contextuel — affiché sous la question, token hint-info (bleu, icône 💡)
   answers: {
     label: string,   // libellé affiché à l'utilisateur
     next: string,    // ID du nœud suivant OU ID d'une cause terminale
@@ -220,6 +222,7 @@ Champs supprimés vs V1 : `id` (redondant avec la clé de l'objet), `flagDepende
     description: string,  // action concrète à mener
     criterion: string,    // critère de succès observable
     gate: boolean,        // si true : l'étape suivante attend que celle-ci soit conclue
+    context?: string,     // (optionnel) "Pourquoi maintenant" — affiché en encart context-warm
   }[]
 }
 ```
@@ -252,7 +255,7 @@ Procédure :
 3. Ajouter les symptômes dans `SYMPTOMS` avec `tree: "quality"`
 4. `validateTrees()` couvrira automatiquement les nouveaux nœuds
 
-*Note UX : avec 8+ symptômes visibles, l'écran Symptôme devra évoluer. L'évolution de l'UX est reportée — une liste plate est acceptée temporairement jusqu'à ce que le deuxième arbre soit prêt à implémenter.*
+*Note UX : les symptômes sont désormais groupés en 2 paires par arbre (bleu Engagements / ambre Flux). L'ajout d'un troisième arbre nécessitera un nouveau groupe et potentiellement une évolution du layout si les groupes dépassent 2.*
 
 ## Décisions d'architecture
 
@@ -273,5 +276,9 @@ Procédure :
 | Pas de profil utilisateur | Le rôle ne pilotait que la formulation des symptômes — supprimé en rev. 7, libellé unique par symptôme. |
 | Pas de sélection de catégorie | Étape UI sans valeur diagnostique propre. Les symptômes routent directement vers leur arbre. |
 | `teamName` dans le state (pas persisté) | Champ optionnel affiché dans le parcours. La persistence entre sessions est reportée à V4. |
+
+| `ExitObserveScreen` séparé de `ResultScreen` | Les layouts, contenus et footers sont fondamentalement différents. Un seul composant avec des conditions `if terminalId === exit_observe` aurait été difficile à maintenir. Le routing conditionnel dans `App.jsx` garde la séparation propre. |
+| `showButtons` sur `ContextStrip` | Permet à `DiagnosisScreen` de gérer sa propre navigation dans un footer dédié (back + restart conditionnel) sans dupliquer les boutons. `ResultScreen` et `PlanScreen` gardent le comportement par défaut (`showButtons=true`). |
+| `pillLabel` dans `palierMeta()` | Champ additionnel ("Palier N — [court]") qui coexiste avec `label` long — évite de reconstruire la string dans les composants et préserve la compatibilité des tests existants sur `label`. |
 
 *Updated: 2026-06-01*

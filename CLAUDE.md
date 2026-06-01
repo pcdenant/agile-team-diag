@@ -18,17 +18,21 @@
 - Deploy: Vercel (static site, auto-deploy on merge to main)
 
 **Key decisions:**
-- Data in `src/data/` — causes, actionPlans, symptoms, trees extracted from App.jsx
+- Data in `src/data/` — causes, actionPlans, symptoms, trees
+- Screens in `src/screens/` — SymptomScreen, DiagnosisScreen, ResultScreen, ExitObserveScreen, PlanScreen
 - PlanScreen split into 4 sub-components in `src/components/`
-- App.jsx exports style tokens consumed by sub-components (no prop drilling, no Context)
-- Named constants in `src/constants.js` (STEPS, TREE_IDS) — no magic strings
+- Style tokens in `src/theme.js` (`C`, `FONT`, `MONO`, button presets) — not in App.jsx
+- UI helpers in `src/utils/ui.jsx` (`Badge`, `PillBadge`, `SectionTitle`, `palierMeta`, `severityPillMeta`, etc.)
+- App.jsx reduced to navigation state only — re-exports helpers for test compatibility
+- Named constants in `src/constants.js` (STEPS, TREE_IDS, SEVERITY, TIMING) — no magic strings
 - No backend — standalone diagnostic tool, zero external API calls
-- Inline styles over CSS framework — token objects instead of Tailwind/CSS Modules
-- Runtime validation — validateTrees() runs at module load to catch authoring errors
+- Inline styles over CSS framework — token objects + CSS classes for :hover/:active/:focus-visible
+- Runtime validation — validateTrees() in useEffect, renders error screen on failure
 - Shared diagnostic tree nodes — predictability and TTM trees share reusable branches
 - French-only content — no i18n scaffolding; multi-language would require full refactor
 - useState only — no Context, Redux, or external state library
 - All 21 action plans implemented (21/21)
+- exit_observe (palier 0) routes to ExitObserveScreen — dedicated screen, no plan access
 
 ---
 
@@ -62,6 +66,11 @@
   2. [Step] → verify: [check]
   ```
 - Loop until verified. Don't report done before checking.
+
+### Documentation sync
+- At plan phase : identify which docs files are affected by the planned changes (`CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/PRD.md`, `CLAUDE.md`).
+- At each PR : update every affected doc file in the same branch before merging. Doc files and code ship together — never in a follow-up PR.
+- Scope : CHANGELOG gets a new entry for every PR. ARCHITECTURE.md is updated if the file structure, schemas, or key concepts change. PRD.md is updated if product behaviour or diagnostic logic changes. CLAUDE.md is updated if project conventions, stack, or architecture decisions change.
 
 ---
 
@@ -146,24 +155,37 @@ docs: update API endpoint documentation
 ```
 /
 ├── src/
-│   ├── App.jsx           # UI, navigation, validation, helpers, style token exports
+│   ├── App.jsx           # Navigation state, rendu conditionnel, re-exports compat
 │   ├── main.jsx          # React entry point
-│   ├── constants.js      # STEPS, TREE_IDS
-│   ├── index.css         # Minimal reset
+│   ├── theme.js          # Tokens design : C, FONT, MONO, btnReset, linkBtn, primaryBtn
+│   ├── constants.js      # STEPS, TREE_IDS, SEVERITY, TIMING
+│   ├── index.css         # Reset + classes CSS interactives (.btn-choice, .btn-primary, groupes)
+│   ├── utils/
+│   │   └── ui.jsx        # Badge, PillBadge, SectionTitle, severityLabel, severityColor,
+│   │                     #   palierMeta (label/shortLabel/pillLabel/color), severityPillMeta
 │   ├── data/
 │   │   ├── causes.js     # CAUSES — 21 causes + exit_observe
 │   │   ├── actionPlans.js # ACTION_PLANS — 21/21 implemented
 │   │   ├── symptoms.js   # SYMPTOMS — 4 symptoms
 │   │   └── trees.js      # SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES
 │   ├── components/
+│   │   ├── Header.jsx
+│   │   ├── ContextStrip.jsx      # Barre contexte (symptôme + groupe) — prop showButtons
+│   │   ├── PathTrail.jsx
 │   │   ├── PlanHeader.jsx
-│   │   ├── PlanMetrics.jsx
+│   │   ├── PlanMetrics.jsx       # Encart coût : token cost-alert (⚠)
 │   │   ├── PlanBusinessPitch.jsx
-│   │   └── PlanExperiments.jsx
+│   │   └── PlanExperiments.jsx   # Encart context optionnel : token context-warm
+│   ├── screens/
+│   │   ├── SymptomScreen.jsx     # Groupement en 2 paires avec code couleur
+│   │   ├── DiagnosisScreen.jsx   # Hints : token hint-info (💡), footer restart conditionnel
+│   │   ├── ResultScreen.jsx      # 3 PillBadge (Sévérité · Palier · Propriétaire)
+│   │   ├── ExitObserveScreen.jsx # Palier 0 — 5 questions rétro, pas de plan
+│   │   └── PlanScreen.jsx
 │   └── tests/
 │       ├── App.test.jsx     # Integration tests (component flows)
 │       ├── data.test.js     # Data structure validation
-│       ├── helpers.test.js  # Utility function tests
+│       ├── helpers.test.js  # Utility function tests + token color tests
 │       └── setup.js         # Vitest global setup
 ├── docs/
 │   ├── ARCHITECTURE.md  # Technical structure (multi-file)
@@ -175,4 +197,4 @@ docs: update API endpoint documentation
 └── CLAUDE.md
 ```
 
-*Updated: 2026-05-08*
+*Updated: 2026-06-01*
