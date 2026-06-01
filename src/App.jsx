@@ -144,7 +144,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: FONT, fontSize: 15, lineHeight: 1.5, padding: "32px 16px 64px" }}>
-      <div style={{ maxWidth: 960, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
         <Header />
         {step === STEPS.SYMPTOM && <SymptomScreen onPick={pickSymptom} />}
         {step === STEPS.DIAGNOSIS && symptom && currentNode && (
