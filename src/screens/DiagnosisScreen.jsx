@@ -11,8 +11,8 @@ export default function DiagnosisScreen({ symptom, tree, currentNodeId, currentN
       <SectionTitle n={String(path.length + 2).padStart(2, "0")} label={`Question ${path.length + 1}`} />
       <div style={{ fontSize: 17, fontWeight: 500, color: C.ink, marginBottom: 10, lineHeight: 1.4 }}>{currentNode.question}</div>
       {currentNode.hint && (
-        <div style={{ background: C.hintBg, border: `1px solid ${C.hintBorder}`, color: C.hintText, fontSize: 13, padding: "8px 12px", borderRadius: 4, marginBottom: 16, lineHeight: 1.45 }}>
-          <span style={{ fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5, marginRight: 6 }}>Indice</span>
+        <div style={{ background: C.hintInfoBg, border: `1px solid ${C.hintInfoBorder}`, color: C.hintInfoColor, fontSize: 13, padding: "8px 12px", borderRadius: 4, marginBottom: 16, lineHeight: 1.45 }}>
+          <span style={{ marginRight: 6 }}>💡</span>
           {currentNode.hint}
         </div>
       )}
