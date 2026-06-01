@@ -34,6 +34,23 @@ describe("SymptomScreen (étape initiale)", () => {
     render(<App />);
     expect(screen.getByPlaceholderText(/Team Phoenix/i)).toBeInTheDocument();
   });
+
+  it("affiche la ligne d'ancrage (#1)", () => {
+    render(<App />);
+    expect(screen.getByText(/En 5 questions, tu identifies la cause réelle/)).toBeInTheDocument();
+  });
+
+  it("affiche les 2 headers de groupes (#2)", () => {
+    render(<App />);
+    expect(screen.getByText("Engagements & dates")).toBeInTheDocument();
+    expect(screen.getByText("Flux & avancement")).toBeInTheDocument();
+  });
+
+  it("affiche les hints de groupes (#2)", () => {
+    render(<App />);
+    expect(screen.getByText(/Ce que l'équipe a promis ne se réalise pas/)).toBeInTheDocument();
+    expect(screen.getByText(/Le travail ne circule pas/)).toBeInTheDocument();
+  });
 });
 
 // --- DiagnosisScreen ---------------------------------------------------------

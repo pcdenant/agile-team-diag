@@ -21,11 +21,15 @@ body { -webkit-font-smoothing: antialiased; }
 
 /* Interactive buttons — replaces inline onMouseEnter/Leave DOM manipulation */
 .btn-choice {
-  border: 1px solid #e5e5e5;
+  border: 1.5px solid #e5e5e5;
   background: #ffffff;
   transition: border-color 120ms ease, background 120ms ease;
 }
 .btn-choice:hover { border-color: #404040; background: #f5f5f4; }
+
+/* Hover couleur groupe — SymptomScreen */
+.btn-symptom-pred:hover { border-color: #2E5FA3 !important; background: #EBF1FA !important; }
+.btn-symptom-ttm:hover  { border-color: #C07818 !important; background: #FEF3DC !important; }
 
 .btn-primary { transition: opacity 120ms ease; }
 .btn-primary:hover  { opacity: 0.85; }
