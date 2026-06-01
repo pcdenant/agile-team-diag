@@ -4,6 +4,48 @@ Format : [Conventional Commits](https://www.conventionalcommits.org/). Versions 
 
 ---
 
+## [2.6.1] — 2026-06-01 — Qualité de code P2 (PRs #21, #22, #23)
+
+### Fix
+- Clés React stables dans les listes : `key={a.next}` (DiagnosisScreen), `key={exp.label}` (PlanExperiments), `key={ind.metric}` (PlanMetrics) — remplace `key={i}`
+- PropTypes sur les 4 composants `Plan*` (`PlanHeader`, `PlanMetrics`, `PlanBusinessPitch`, `PlanExperiments`)
+
+### Refactor
+- `SEVERITY` et `TIMING` exportés depuis `constants.js` — remplace 65 string literals dans `causes.js`, `actionPlans.js` et `utils/ui.jsx`
+- Handlers `onMouseEnter/Leave/Down/Up` remplacés par classes CSS `.btn-choice` et `.btn-primary` dans `index.css` — WCAG 2.1 AA, plus de manipulation DOM directe
+
+### Chore
+- Installation de `prop-types ^15.8.1` (retiré de React 18 core)
+
+---
+
+## [2.6.0] — 2026-06-01 — Refactoring architecture P1 (PRs #18, #19, #20)
+
+### Refactor
+- `validateTrees()` déplacée dans un `useEffect` au premier rendu — affiche un écran d'erreur visible si des données sont corrompues, remplace le `console.error` silencieux
+- Création de `src/theme.js` (tokens design : `C`, `FONT`, `MONO`, `btnReset`, `linkBtn`, `primaryBtn`) et `src/utils/ui.jsx` (composants `Badge`, `SectionTitle` + helpers `severityLabel`, `severityColor`, `palierMeta`) — supprime les imports circulaires des 4 composants `Plan*` vers `App.jsx`
+- Extraction de 7 composants/screens inline d'`App.jsx` vers des fichiers dédiés : `Header`, `ContextStrip`, `PathTrail` dans `src/components/` ; `SymptomScreen`, `DiagnosisScreen`, `ResultScreen`, `PlanScreen` dans `src/screens/`
+- `App.jsx` réduit de ~319 lignes à ~164 lignes (navigation + state uniquement)
+
+---
+
+## [2.5.9] — 2026-06-01 — Bug fix P0 : focusVariant absent sur c2 et c2q (PR #17)
+
+### Fix
+- Ajout du `focusVariant` manquant dans `ACTION_PLANS.c2.businessPitch` et `ACTION_PLANS.c2q.businessPitch` — la section "Statu quo / Résultat attendu" était silencieusement absente pour ces deux causes sur tous les parcours
+
+---
+
+## [2.5.8] — 2026-06-01 — Documentation et tests P3 (PR #16)
+
+### Test
+- Ajout d'un test de couverture cause → plan : vérifie que chaque cause (hors `exit_observe`) a un plan d'action correspondant dans `ACTION_PLANS`
+
+### Docs
+- `PRD.md` mis à jour : roadmap V2.5 marquée ✅, schéma `experiments[]` aligné sur l'implémentation réelle (remplace le schéma aspirationnel `actions[]` / `collect{}`)
+
+---
+
 ## [2.5.7] — 2026-05-08 — Refactoring structure (PR #11)
 
 ### Refactor

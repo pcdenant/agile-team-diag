@@ -4,7 +4,7 @@ Outil interactif de diagnostic de dysfonctionnements de flux pour Scrum Masters,
 
 **Marque :** Collaboration Solved  
 **Auteur :** Pierre-Cyril Denant  
-**Version :** 2.5.7  
+**Version :** 2.6.1  
 **Statut :** MVP — 21 causes couvertes, tous les plans d'action implémentés
 
 ---
@@ -49,25 +49,15 @@ npm run coverage  # Couverture de code
 
 ```
 src/
-├── App.jsx              # Composants UI, navigation, runtime validation
-├── main.jsx             # Entrée React
-├── constants.js         # STEPS, TREE_IDS
-├── index.css            # Reset minimal
-├── data/
-│   ├── causes.js        # 21 causes racine + exit_observe
-│   ├── actionPlans.js   # Plans d'action (21/21 implémentés)
-│   ├── symptoms.js      # 4 symptômes
-│   └── trees.js         # SHARED_NODES, PREDICTABILITY_NODES, TTM_NODES, TREES
-├── components/
-│   ├── PlanHeader.jsx
-│   ├── PlanMetrics.jsx
-│   ├── PlanBusinessPitch.jsx
-│   └── PlanExperiments.jsx
-└── tests/
-    ├── App.test.jsx
-    ├── data.test.js
-    ├── helpers.test.js
-    └── setup.js
+├── App.jsx              # Navigation state, rendu conditionnel
+├── theme.js             # Tokens design (C, FONT, MONO, boutons)
+├── constants.js         # STEPS, TREE_IDS, SEVERITY, TIMING
+├── index.css            # Reset + classes CSS interactives
+├── utils/ui.jsx         # Badge, SectionTitle, severityLabel, palierMeta
+├── data/                # causes.js, actionPlans.js, symptoms.js, trees.js
+├── components/          # Header, ContextStrip, PathTrail, PlanHeader/Metrics/BusinessPitch/Experiments
+├── screens/             # SymptomScreen, DiagnosisScreen, ResultScreen, PlanScreen
+└── tests/               # App.test.jsx, data.test.js, helpers.test.js
 docs/
 ├── ARCHITECTURE.md      # Structure technique détaillée
 └── PRD.md               # Product requirements
