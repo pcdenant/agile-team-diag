@@ -1,17 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { C, MONO, sectionHeaderStyle, Badge, severityLabel } from "../utils/ui.jsx";
+import { C, MONO, Badge, severityLabel } from "../utils/ui.jsx";
 
 export default function PlanMetrics({ plan, cause, sev }) {
   return (
-    <div className="plan-grid" style={{ marginBottom: 20, alignItems: "start" }}>
-      <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
-        <div style={sectionHeaderStyle}>Impact · Objectif</div>
-        <div style={{ background: C.costAlertBg, border: `1.5px solid ${C.costAlertBorder}`, borderRadius: 4, padding: "10px 12px", marginBottom: 10 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: C.costAlertColor, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 4 }}>⚠ Ce que ça coûte</div>
-          <div style={{ fontFamily: MONO, fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{plan.cost}</div>
-        </div>
-        {plan.costHint ? <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5, marginBottom: 14 }}>{plan.costHint}</div> : null}
+    <>
+      <div className="bento-card bento-span-full" style={{ background: C.costAlertBg, border: `1.5px solid ${C.costAlertBorder}` }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.costAlertColor, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>⚠ Ce que ça coûte</div>
+        <div style={{ fontFamily: MONO, fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{plan.cost}</div>
+        {plan.costHint ? <div style={{ fontSize: 12, color: C.costAlertColor, lineHeight: 1.5, marginTop: 6, opacity: 0.8 }}>{plan.costHint}</div> : null}
+      </div>
+
+      <div className="bento-card bento-span-2">
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Impact · Objectif</div>
         <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Mesures de succès</div>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
@@ -34,24 +35,24 @@ export default function PlanMetrics({ plan, cause, sev }) {
         <div style={{ marginTop: 12, fontSize: 11, color: C.muted, fontStyle: "italic" }}>{plan.ownerNote}</div>
       </div>
 
-      <div style={{ border: `1px solid ${C.border}`, borderRadius: 6, padding: "16px 18px", background: C.surface }}>
-        <div style={sectionHeaderStyle}>Inspecter · Mesurer</div>
+      <div className="bento-card bento-span-2">
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12 }}>Inspecter · Mesurer</div>
         <div style={{ fontSize: 13, color: C.text, lineHeight: 1.55, marginBottom: 10 }}>
           Collecter les données dès maintenant — sans reconstituer après coup.
         </div>
         <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, marginBottom: 10 }}>
           <strong style={{ color: C.ink }}>Quoi :</strong> Pour chaque item bloqué, noter la cause, la date de début, et le responsable de résolution.
         </div>
-        <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.55 }}>
+        <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.55, marginBottom: 14 }}>
           <strong style={{ color: C.ink }}>Comment :</strong> Voir Étape 1 ci-dessous — le tag sur le board est la seule action requise cette semaine.
         </div>
-        <div style={{ marginTop: 14, borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
+        <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
           <Badge color={sev}>Sévérité : {severityLabel(cause.severity)}</Badge>
           {" "}
           <Badge color={C.borderStrong}>Propriétaire : {cause.owner}</Badge>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

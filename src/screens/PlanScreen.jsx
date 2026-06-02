@@ -18,10 +18,12 @@ export default function PlanScreen({ symptom, tree, treeFocus, terminalId, teamN
   return (
     <div className="screen-enter">
       <ContextStrip symptom={symptom} tree={tree} onBack={onBack} onRestart={onRestart} backLabel="← Retour au résultat" />
-      <PlanHeader cause={cause} teamName={teamName} path={path} terminalId={terminalId} />
-      <PlanMetrics plan={plan} cause={cause} sev={sev} />
-      <PlanBusinessPitch pitch={pitch} variant={variant} />
-      <PlanExperiments experiments={plan.experiments} />
+      <div className="bento-grid" style={{ marginTop: 16 }}>
+        <PlanHeader cause={cause} teamName={teamName} path={path} terminalId={terminalId} />
+        <PlanMetrics plan={plan} cause={cause} sev={sev} />
+        <PlanBusinessPitch pitch={pitch} variant={variant} />
+        <PlanExperiments experiments={plan.experiments} />
+      </div>
     </div>
   );
 }

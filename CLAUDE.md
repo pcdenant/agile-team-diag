@@ -14,19 +14,19 @@
 - Frontend: React 18 + Vite (SPA, no SSR)
 - Backend: None — pure client-side application
 - DB: None — all data is static in-memory JS objects
-- Styling: Inline styles with shared design tokens (`C`, `FONT`, `MONO` in App.jsx)
+- Styling: Inline styles with shared design tokens (`C`, `FONT`, `MONO`, `CARD` in `src/theme.js`) + bento-grid CSS classes in `index.css`
 - Deploy: Vercel (static site, auto-deploy on merge to main)
 
 **Key decisions:**
 - Data in `src/data/` — causes, actionPlans, symptoms, trees
 - Screens in `src/screens/` — SymptomScreen, DiagnosisScreen, ResultScreen, ExitObserveScreen, PlanScreen
 - PlanScreen split into 4 sub-components in `src/components/`
-- Style tokens in `src/theme.js` (`C`, `FONT`, `MONO`, button presets) — not in App.jsx
+- Style tokens in `src/theme.js` (`C`, `FONT`, `MONO`, `CARD`, button presets) — not in App.jsx
 - UI helpers in `src/utils/ui.jsx` (`Badge`, `PillBadge`, `SectionTitle`, `palierMeta`, `severityPillMeta`, etc.)
 - App.jsx reduced to navigation state only — re-exports helpers for test compatibility
 - Named constants in `src/constants.js` (STEPS, TREE_IDS, SEVERITY, TIMING) — no magic strings
 - No backend — standalone diagnostic tool, zero external API calls
-- Inline styles over CSS framework — token objects + CSS classes for :hover/:active/:focus-visible
+- Inline styles over CSS framework — token objects + CSS classes for bento-grid layout and :hover/:active/:focus-visible
 - Runtime validation — validateTrees() in useEffect, renders error screen on failure
 - Shared diagnostic tree nodes — predictability and TTM trees share reusable branches
 - French-only content — no i18n scaffolding; multi-language would require full refactor
@@ -171,11 +171,11 @@ docs: update API endpoint documentation
 │   ├── components/
 │   │   ├── Header.jsx
 │   │   ├── ContextStrip.jsx      # Barre contexte (symptôme + groupe) — prop showButtons
-│   │   ├── PathTrail.jsx
-│   │   ├── PlanHeader.jsx
-│   │   ├── PlanMetrics.jsx       # Encart coût : token cost-alert (⚠)
-│   │   ├── PlanBusinessPitch.jsx
-│   │   └── PlanExperiments.jsx   # Encart context optionnel : token context-warm
+│   │   ├── PathTrail.jsx         # props: collapsible (details collapse), flat (no own card)
+│   │   ├── PlanHeader.jsx        # bento-card bento-span-full
+│   │   ├── PlanMetrics.jsx       # Fragment → cost-alert + impact + inspection
+│   │   ├── PlanBusinessPitch.jsx # Fragment → section label + statu quo + expected + leadership
+│   │   └── PlanExperiments.jsx   # Fragment → section label + N experiment bento-cards
 │   ├── screens/
 │   │   ├── SymptomScreen.jsx     # Groupement en 2 paires avec code couleur
 │   │   ├── DiagnosisScreen.jsx   # Hints : token hint-info (💡), footer restart conditionnel
@@ -197,4 +197,4 @@ docs: update API endpoint documentation
 └── CLAUDE.md
 ```
 
-*Updated: 2026-06-01*
+*Updated: 2026-06-02*
