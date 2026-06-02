@@ -4,6 +4,26 @@ Format : [Conventional Commits](https://www.conventionalcommits.org/). Versions 
 
 ---
 
+## [2.8.0] — 2026-06-02 — UI Revamp Bento Grid (PRs #28–#32)
+
+### Feat
+- **Design system** : Bento grid (Apple-style), mobile-first, 3 breakpoints (1 col < 640px / 2 col 640–1023px / 4 col ≥ 1024px)
+- Nouveau token `CARD` dans `theme.js` (radius 16, padding 20, shadow 0 1px 4px, bg #FFFFFF)
+- Mise à jour des tokens `C.bg` → `#F5F5F7` et `C.text` → `#1D1D1F`
+- Nouvelles classes CSS dans `index.css` : `.bento-grid`, `.bento-card`, `.bento-span-2`, `.bento-span-3`, `.bento-span-full`, `.rs-cause-action`, `.eo-questions-grid`, `.dx-answers` / `.dx-answers-2col`
+- Container `App.jsx` : `maxWidth` 960 → 1280px
+- **SymptomScreen** (PR #28) : bento-grid, 2 cards groupe côte-à-côte sur desktop (bleu pred / ambre TTM), fond page `#F5F5F7`
+- **DiagnosisScreen** (PR #29) : question + réponses dans un seul bento-card ; `PathTrail` en `<details>` collapse fermé par défaut ; réponses en 2-col sur desktop si ≥4 options
+- **ResultScreen** (PR #30) : cause et action en sub-grid `.rs-cause-action` (3fr + 1fr sur desktop) ; PathTrail en bento-card full-width séparé avec prop `flat`
+- **ExitObserveScreen** (PR #31) : `.eo-questions-grid` 1→2→3 colonnes ; chaque question rétro = bento-card numérotée
+- **PlanScreen** (PR #32) : header, cost alert, impact/inspection, business pitch et expériences en items bento-grid distincts
+
+### Refactor
+- `PathTrail.jsx` : props `collapsible` (résumé `<details>` cliquable) et `flat` (supprime le card styling propre au composant quand imbriqué dans une bento-card parente)
+- `PlanMetrics`, `PlanBusinessPitch`, `PlanExperiments` : retournent des React Fragments transparents à la CSS Grid — leurs cards participent directement dans la `.bento-grid` parente de `PlanScreen`
+
+---
+
 ## [2.7.1] — 2026-06-01 — UX rev. 9 — gaps post-audit (PR #26)
 
 ### Fix

@@ -3,9 +3,9 @@
 ## Stack
 
 - **Runtime** : React 18 + Vite (SPA, client-side uniquement)
-- **Styling** : Inline styles via shared `C`, `FONT`, `MONO` tokens (définis dans `src/theme.js`) + classes CSS interactives dans `index.css`
+- **Styling** : Inline styles via shared `C`, `FONT`, `MONO`, `CARD` tokens (définis dans `src/theme.js`) + classes CSS bento-grid et interactives dans `index.css`
 - **State** : `useState` — pas de store externe
-- **Responsive** : breakpoint 768px
+- **Responsive** : mobile-first — breakpoints 640px (2 col) / 1024px (4 col bento)
 - **Validation** : `validateTrees()` dans `useEffect` au premier rendu — affiche un écran d'erreur si erreur détectée
 - **Tests** : Vitest + React Testing Library
 
@@ -17,7 +17,7 @@ src/
 ├── main.jsx             # Entrée React
 ├── theme.js             # Tokens design : C, FONT, MONO, btnReset, linkBtn, primaryBtn
 ├── constants.js         # STEPS, TREE_IDS, SEVERITY, TIMING
-├── index.css            # Reset + classes CSS interactives (.btn-choice, .btn-primary)
+├── index.css            # Reset + bento-grid (.bento-grid/.bento-card/.bento-span-*) + classes CSS interactives
 ├── utils/
 │   └── ui.jsx           # Badge, PillBadge, SectionTitle, severityLabel, severityColor,
 │                        #   palierMeta (label/shortLabel/pillLabel/color), severityPillMeta
@@ -29,11 +29,11 @@ src/
 ├── components/
 │   ├── Header.jsx            # En-tête statique de l'application
 │   ├── ContextStrip.jsx      # Barre contexte (dot couleur groupe) — prop showButtons
-│   ├── PathTrail.jsx         # Historique du parcours diagnostic
-│   ├── PlanHeader.jsx        # En-tête du plan (titre + nom équipe)
-│   ├── PlanMetrics.jsx       # Quadrant Impact/Objectif + Inspecter/Mesurer
-│   ├── PlanBusinessPitch.jsx # Section pitch business
-│   └── PlanExperiments.jsx   # Section expérimentations 48h
+│   ├── PathTrail.jsx         # Historique du parcours — props: collapsible, flat
+│   ├── PlanHeader.jsx        # En-tête du plan — bento-card bento-span-full
+│   ├── PlanMetrics.jsx       # Fragment → cost-alert + impact + inspection (3 bento items)
+│   ├── PlanBusinessPitch.jsx # Fragment → section label + statusQuo + expected + leadership
+│   └── PlanExperiments.jsx   # Fragment → section label + N experiment bento-cards
 ├── screens/
 │   ├── SymptomScreen.jsx     # Étape 1 : sélection du symptôme (groupement 2 paires)
 │   ├── DiagnosisScreen.jsx   # Étape 2 : arbre de diagnostic (hints hint-info, footer restart)
@@ -280,5 +280,9 @@ Procédure :
 | `ExitObserveScreen` séparé de `ResultScreen` | Les layouts, contenus et footers sont fondamentalement différents. Un seul composant avec des conditions `if terminalId === exit_observe` aurait été difficile à maintenir. Le routing conditionnel dans `App.jsx` garde la séparation propre. |
 | `showButtons` sur `ContextStrip` | Permet à `DiagnosisScreen` de gérer sa propre navigation dans un footer dédié (back + restart conditionnel) sans dupliquer les boutons. `ResultScreen` et `PlanScreen` gardent le comportement par défaut (`showButtons=true`). |
 | `pillLabel` dans `palierMeta()` | Champ additionnel ("Palier N — [court]") qui coexiste avec `label` long — évite de reconstruire la string dans les composants et préserve la compatibilité des tests existants sur `label`. |
+| Bento grid — CSS classes + inline styles | `.bento-grid`, `.bento-card`, `.bento-span-*` définis dans `index.css` (pas de framework). Les propriétés variant par composant (border-left sévérité, bg couleur alertes) restent en inline styles — override naturel sur les classes. Aucune dépendance ajoutée. |
+| Breakpoints 640/1024px | Mobile < 640px : 1 col. Tablet 640–1023px : 2 col. Desktop ≥ 1024px : 4 col. Choix Apple-style — la densité n'augmente qu'à partir de résolutions réellement confortables. |
+| React Fragments pour Plan sub-composants | `PlanMetrics`, `PlanBusinessPitch`, `PlanExperiments` retournent des Fragments dont les enfants participent directement dans la `.bento-grid` parente. Évite d'imbriquer des grids ou d'éclater la logique de chaque section dans `PlanScreen`. Prop API inchangée. |
+| `flat` sur `PathTrail` | Quand `PathTrail` est imbriqué dans une bento-card parente (ResultScreen), `flat=true` supprime son propre border/bg — évite le double-card. `collapsible=true` (DiagnosisScreen) l'affiche dans un `<details>` fermé par défaut — PathTrail accessible sans occuper l'espace visuel primaire. |
 
-*Updated: 2026-06-01*
+*Updated: 2026-06-02*
